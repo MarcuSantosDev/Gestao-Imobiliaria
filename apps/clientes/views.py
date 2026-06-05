@@ -1,18 +1,29 @@
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.db.models import Q
 from django.urls import reverse_lazy
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+
 from apps.imoveis.models import Cliente
+
 from .forms import ClienteForm
+
 
 class ClienteListView(ListView):
     model = Cliente
     template_name = 'clientes/list.html'
     context_object_name = 'clientes'
+    paginate_by = 10
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        busca = self.request.GET.get('q', '').strip()
-        if busca:
-            qs = qs.filter(nome__icontains=busca)
+        qs = Cliente.objects.all()
+        params = self.request.GET
+
+        if q := params.get('q', '').strip():
+            qs = qs.filter(
+                Q(nome__icontains=q) | Q(email__icontains=q)
+            )
+        if telefone := params.get('telefone', '').strip():
+            qs = qs.filter(telefone__icontains=telefone)
+
         return qs.order_by('-criado_em')
 
 

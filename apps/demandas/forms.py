@@ -44,8 +44,6 @@ class DemandaForm(forms.ModelForm):
         cleaned_data = super().clean()
         if not cleaned_data.get('cidade'):
             self.add_error('cidade', 'Selecione a cidade.')
-        if not cleaned_data.get('bairros_selecionados'):
-            self.add_error('bairros_selecionados', 'Selecione ao menos um bairro.')
         return cleaned_data
 
     def save(self, commit=True):

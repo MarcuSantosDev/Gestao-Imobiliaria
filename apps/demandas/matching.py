@@ -20,9 +20,6 @@ def _passa_filtros_obrigatorios(demanda, imovel):
     if imovel.finalidade != demanda.finalidade:
         return False
 
-    if not _tipo_compativel(demanda, imovel):
-        return False
-
     if demanda.valor_minimo is not None and imovel.valor < demanda.valor_minimo:
         return False
     if demanda.valor_maximo is not None and imovel.valor > demanda.valor_maximo:
@@ -31,16 +28,21 @@ def _passa_filtros_obrigatorios(demanda, imovel):
     if imovel.cidade != demanda.cidade:
         return False
 
-    bairros = demanda.get_bairros_lista()
-    if not bairros or imovel.bairro not in bairros:
-        return False
-
     return True
 
 
 def calcular_compatibilidade(demanda, imovel):
     pontos = 0
     max_pontos = 0
+
+    max_pontos += 15
+    if _tipo_compativel(demanda, imovel):
+        pontos += 15
+
+    bairros = demanda.get_bairros_lista()
+    max_pontos += 15
+    if not bairros or imovel.bairro in bairros:
+        pontos += 15
 
     max_pontos += 10
     if demanda.dormitorios is None or imovel.dormitorios >= demanda.dormitorios:
@@ -57,15 +59,15 @@ def calcular_compatibilidade(demanda, imovel):
         pontos += 10
 
     infra_desejada = set(demanda.infraestrutura.values_list('id', flat=True))
-    max_pontos += 70
+    max_pontos += 40
     if not infra_desejada:
-        pontos += 70
+        pontos += 40
     else:
         infra_imovel = set(imovel.infraestrutura.values_list('id', flat=True))
         if infra_desejada.issubset(infra_imovel):
-            pontos += 70
+            pontos += 40
         else:
-            pontos += int(70 * len(infra_desejada & infra_imovel) / len(infra_desejada))
+            pontos += int(40 * len(infra_desejada & infra_imovel) / len(infra_desejada))
 
     if max_pontos == 0:
         return 0

@@ -8,12 +8,24 @@
     <a href="{% url 'clientes:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Cliente</a>
 </div>
 
-<form method="get" class="mb-3">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Buscar por nome..." value="{{ request.GET.q }}">
-        <button class="btn btn-outline-secondary">Buscar</button>
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Nome ou e-mail</label>
+                <input type="text" name="q" class="form-control" placeholder="Buscar cliente..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Telefone</label>
+                <input type="text" name="telefone" class="form-control" placeholder="Buscar telefone..." value="{{ request.GET.telefone }}">
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
+                <a href="{% url 'clientes:list' %}" class="btn btn-outline-secondary">Limpar</a>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
 <div class="card shadow-sm">
     <div class="table-responsive">
@@ -40,10 +52,12 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-muted">Nenhum cliente cadastrado.</td></tr>
+                <tr><td colspan="5" class="text-muted">Nenhum cliente encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+{% include 'includes/pagination.html' %}
 {% endblock %}

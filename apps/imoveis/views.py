@@ -1,29 +1,68 @@
-import io
-import os
-import zipfile
+from decimal import Decimal, InvalidOperation
 
-from django.http import JsonResponse
-from django.http import HttpResponse
-from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
+
+from apps.imoveis.localidades import BAIRROS, CIDADES, bairros_da_cidade
+from apps.imoveis.models import Categoria
 
 from .forms import ImovelForm
 from .mixins import LocalidadesFormMixin
 from .models import FotoImovel, Imovel
 from .sharing import gerar_texto_compartilhamento
 
+import io
+import os
+import zipfile
+
+from django.http import HttpResponse, JsonResponse
+from django.urls import reverse_lazy
+
 
 class ImovelListView(ListView):
     model = Imovel
     template_name = 'imoveis/list.html'
     context_object_name = 'imoveis'
+    paginate_by = 10
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('categoria', 'corretor').prefetch_related('fotos')
-        busca = self.request.GET.get('q', '').strip()
-        if busca:
-            qs = qs.filter(titulo__icontains=busca)
+        qs = Imovel.objects.select_related('categoria', 'corretor').prefetch_related('fotos')
+        params = self.request.GET
+
+        if q := params.get('q', '').strip():
+            qs = qs.filter(titulo__icontains=q)
+        if cidade := params.get('cidade', '').strip():
+            qs = qs.filter(cidade=cidade)
+        if bairro := params.get('bairro', '').strip():
+            qs = qs.filter(bairro=bairro)
+        if finalidade := params.get('finalidade', '').strip():
+            qs = qs.filter(finalidade=finalidade)
+        if status := params.get('status', '').strip():
+            qs = qs.filter(status=status)
+        if categoria := params.get('categoria', '').strip():
+            qs = qs.filter(categoria_id=categoria)
+        if valor_min := params.get('valor_min', '').strip():
+            try:
+                qs = qs.filter(valor__gte=Decimal(valor_min))
+            except InvalidOperation:
+                pass
+        if valor_max := params.get('valor_max', '').strip():
+            try:
+                qs = qs.filter(valor__lte=Decimal(valor_max))
+            except InvalidOperation:
+                pass
+
         return qs.order_by('-id')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cidade = self.request.GET.get('cidade', '')
+        context['bairros_json'] = BAIRROS
+        context['cidades'] = CIDADES
+        context['categorias'] = Categoria.objects.order_by('nome')
+        context['bairros_filtro'] = bairros_da_cidade(cidade) if cidade else []
+        context['finalidade_choices'] = Imovel.FINALIDADE_CHOICES
+        context['status_choices'] = Imovel.STATUS_CHOICES
+        return context
 
 
 class ImovelDetailView(DetailView):

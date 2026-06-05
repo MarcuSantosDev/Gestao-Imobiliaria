@@ -8,12 +8,73 @@
     <a href="{% url 'imoveis:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Imóvel</a>
 </div>
 
-<form method="get" class="mb-3">
-    <div class="input-group">
-        <input type="text" name="q" class="form-control" placeholder="Buscar por título..." value="{{ request.GET.q }}">
-        <button class="btn btn-outline-secondary">Buscar</button>
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="q" class="form-control" placeholder="Título do imóvel..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Cidade</label>
+                <select name="cidade" id="filtro_cidade" class="form-select">
+                    <option value="">Todas</option>
+                    {% for cidade in cidades %}
+                    <option value="{{ cidade }}" {% if request.GET.cidade == cidade %}selected{% endif %}>{{ cidade }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Bairro</label>
+                <select name="bairro" id="filtro_bairro" class="form-select">
+                    <option value="">Todos</option>
+                    {% for bairro in bairros_filtro %}
+                    <option value="{{ bairro }}" {% if request.GET.bairro == bairro %}selected{% endif %}>{{ bairro }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Categoria</label>
+                <select name="categoria" class="form-select">
+                    <option value="">Todas</option>
+                    {% for cat in categorias %}
+                    <option value="{{ cat.pk }}" {% if request.GET.categoria == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Finalidade</label>
+                <select name="finalidade" class="form-select">
+                    <option value="">Todas</option>
+                    {% for value, label in finalidade_choices %}
+                    <option value="{{ value }}" {% if request.GET.finalidade == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Valor mín.</label>
+                <input type="number" name="valor_min" class="form-control" step="0.01" value="{{ request.GET.valor_min }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Valor máx.</label>
+                <input type="number" name="valor_max" class="form-control" step="0.01" value="{{ request.GET.valor_max }}">
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
+                <a href="{% url 'imoveis:list' %}" class="btn btn-outline-secondary">Limpar</a>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
 <div class="card shadow-sm">
     <div class="table-responsive">
@@ -55,10 +116,43 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-muted">Nenhum imóvel cadastrado.</td></tr>
+                <tr><td colspan="7" class="text-muted">Nenhum imóvel encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+{% include 'includes/pagination.html' %}
+{% endblock %}
+
+{% block extra_js %}
+{{ bairros_json|json_script:"bairros-data" }}
+<script>
+(function () {
+    const bairrosData = JSON.parse(document.getElementById('bairros-data').textContent);
+    const cidadeSelect = document.getElementById('filtro_cidade');
+    const bairroSelect = document.getElementById('filtro_bairro');
+    if (!cidadeSelect || !bairroSelect) return;
+
+    function atualizarBairros() {
+        const cidade = cidadeSelect.value;
+        const bairros = [...new Set(bairrosData[cidade] || [])];
+        const valorAtual = bairroSelect.value;
+        bairroSelect.innerHTML = '<option value="">Todos</option>';
+        bairros.forEach((bairro) => {
+            const option = document.createElement('option');
+            option.value = bairro;
+            option.textContent = bairro;
+            if (bairro === valorAtual) option.selected = true;
+            bairroSelect.appendChild(option);
+        });
+    }
+
+    cidadeSelect.addEventListener('change', () => {
+        bairroSelect.value = '';
+        atualizarBairros();
+    });
+})();
+</script>
 {% endblock %}
