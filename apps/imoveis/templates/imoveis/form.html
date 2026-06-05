@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
+{% load moeda_filters static %}
 
 {% block title %}{% if object %}Editar{% else %}Novo{% endif %} Imóvel - ImobiGest CRM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fotos.css' %}">
+{% endblock %}
 
 {% block content %}
 <h1 class="mb-4">{% if object %}Editar{% else %}Novo{% endif %} Imóvel</h1>
@@ -9,30 +14,70 @@
     <div class="card-body">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+
+            <h5 class="mb-3">Dados do imóvel</h5>
             <div class="row">
                 {% for field in form %}
                 {% if field.name != 'infraestrutura' %}
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                <div class="col-md-6 mb-3 {% if field.name == 'descricao' %}col-12{% endif %}">
+                    <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}{% if field.field.required %} *{% endif %}
+                        {% if field.name == 'valor' %}<small class="text-muted">(ex: 350000.00)</small>{% endif %}
+                    </label>
                     {{ field }}
                     {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
                 </div>
                 {% endif %}
                 {% endfor %}
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Fotos</label>
-                    <input type="file" name="fotos" class="form-control" multiple accept="image/*">
-                    <div class="form-text">Selecione uma ou mais fotos do imóvel.</div>
-                </div>
-                <div class="col-12 mb-3">
-                    <label class="form-label">Infraestrutura</label>
-                    <div class="row">
-                        {% for checkbox in form.infraestrutura %}
-                        <div class="col-md-4 col-sm-6">{{ checkbox }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
             </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Fotos do imóvel</h5>
+                <span class="badge bg-primary" data-foto-contador>
+                    {% if object %}{{ total_fotos }} foto{{ total_fotos|pluralize:"s" }}{% else %}0 fotos{% endif %}
+                </span>
+            </div>
+
+            {% if object %}
+            <div data-fotos-servidor class="mb-4">
+                {% if fotos_existentes %}
+                <div class="row g-3" data-fotos-grid>
+                    {% for foto in fotos_existentes %}
+                    <div class="col-6 col-md-3 col-lg-2" data-foto-card>
+                        <div class="foto-card border">
+                            <button type="button" class="foto-delete-btn" data-foto-delete-id="{{ foto.pk }}" data-delete-url="{% url 'imoveis:foto_delete' foto.pk %}" title="Excluir foto">&times;</button>
+                            <img src="{{ foto.imagem.url }}" alt="Foto {{ forloop.counter }}">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-light border" data-fotos-vazio>Nenhuma foto cadastrada ainda.</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label class="form-label" for="input_novas_fotos">
+                    {% if object %}Adicionar novas fotos{% else %}Selecionar fotos{% endif %}
+                </label>
+                <input type="file" name="fotos" id="input_novas_fotos" class="form-control" multiple accept="image/*">
+                <div class="form-text">Selecione as imagens e use o <strong>X</strong> para remover antes de salvar.</div>
+            </div>
+
+            <div id="preview_novas_fotos" class="row g-3 mb-4 d-none"></div>
+
+            <hr class="my-4">
+
+            <h5 class="mb-3">Infraestrutura</h5>
+            <div class="row mb-4">
+                {% for checkbox in form.infraestrutura %}
+                <div class="col-md-4 col-sm-6">{{ checkbox }}</div>
+                {% endfor %}
+            </div>
+
             <div class="d-flex gap-2">
                 <button class="btn btn-primary">Salvar</button>
                 <a href="{% url 'imoveis:list' %}" class="btn btn-secondary">Cancelar</a>
@@ -44,4 +89,5 @@
 
 {% block extra_js %}
 {% include 'includes/localidades_script.html' %}
+<script src="{% static 'js/fotos.js' %}"></script>
 {% endblock %}

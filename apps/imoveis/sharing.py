@@ -1,9 +1,12 @@
+from apps.imoveis.utils import formatar_moeda
+
+
 def gerar_texto_compartilhamento(imovel):
     linhas = [
         f"🏠 {imovel.titulo}",
         "",
         f"📍 {imovel.bairro}, {imovel.cidade}",
-        f"💰 R$ {imovel.valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+        f"💰 {formatar_moeda(imovel.valor)}",
     ]
 
     if imovel.dormitorios:

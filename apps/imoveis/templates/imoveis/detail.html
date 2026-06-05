@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
+{% load moeda_filters static %}
 
 {% block title %}{{ imovel.titulo }} - ImobiGest CRM{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fotos.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-start mb-4">
@@ -16,28 +21,31 @@
 </div>
 
 <div id="shareAlert" class="alert alert-success d-none" role="alert"></div>
+{% csrf_token %}
 
 <div class="row g-4">
     <div class="col-lg-7">
-        {% if imovel.fotos.all %}
-        <div id="carouselImovel" class="carousel slide mb-4" data-bs-ride="carousel">
-            <div class="carousel-inner rounded shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0">Galeria de fotos</h5>
+            <span class="badge bg-secondary" data-foto-contador>{{ imovel.fotos.count }} foto{{ imovel.fotos.count|pluralize:"s" }}</span>
+        </div>
+
+        <div data-fotos-servidor class="mb-4">
+            {% if imovel.fotos.all %}
+            <div class="row g-3" data-fotos-grid>
                 {% for foto in imovel.fotos.all %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <img src="{{ foto.imagem.url }}" class="d-block w-100" style="max-height:420px;object-fit:cover;" alt="Foto do imóvel">
+                <div class="col-6 col-md-4" data-foto-card>
+                    <div class="foto-card border shadow-sm foto-card-lg">
+                        <button type="button" class="foto-delete-btn" data-foto-delete-id="{{ foto.pk }}" data-delete-url="{% url 'imoveis:foto_delete' foto.pk %}" title="Excluir foto">&times;</button>
+                        <img src="{{ foto.imagem.url }}" alt="Foto {{ forloop.counter }}">
+                    </div>
                 </div>
                 {% endfor %}
             </div>
-            {% if imovel.fotos.count > 1 %}
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselImovel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselImovel" data-bs-slide="next">
-                <span class="carousel-control-next-icon"></span>
-            </button>
+            {% else %}
+            <div class="alert alert-light border" data-fotos-vazio>Nenhuma foto cadastrada.</div>
             {% endif %}
         </div>
-        {% endif %}
 
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -51,7 +59,7 @@
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <h5>Informações</h5>
-                <p><strong>Valor:</strong> R$ {{ imovel.valor }}</p>
+                <p><strong>Valor:</strong> {{ imovel.valor|moeda }}</p>
                 <p><strong>Cidade:</strong> {{ imovel.cidade }}</p>
                 <p><strong>Bairro:</strong> {{ imovel.bairro }}</p>
                 {% if imovel.endereco %}<p><strong>Endereço:</strong> {{ imovel.endereco }}</p>{% endif %}
@@ -92,6 +100,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/fotos.js' %}"></script>
 <script>
 document.getElementById('btnCompartilhar').addEventListener('click', async () => {
     const alertBox = document.getElementById('shareAlert');

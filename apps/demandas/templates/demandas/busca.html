@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load moeda_filters %}
 
 {% block title %}Busca Inteligente - ImobiGest CRM{% endblock %}
 
@@ -18,7 +19,12 @@
             <span class="badge bg-danger">Finalidade: {{ demanda.get_finalidade_display }}</span>
             <span class="badge bg-danger">Cidade: {{ demanda.cidade }}</span>
             {% if demanda.valor_minimo or demanda.valor_maximo %}
-            <span class="badge bg-danger">Valor: R$ {{ demanda.valor_minimo|default:"0" }} - R$ {{ demanda.valor_maximo|default:"∞" }}</span>
+            <span class="badge bg-danger">
+                Valor:
+                {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
+                -
+                {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
+            </span>
             {% endif %}
         </div>
         <h6 class="text-muted">Critérios de compatibilidade</h6>
@@ -53,7 +59,7 @@
                     <td>{{ resultado.imovel.titulo }}</td>
                     <td>{{ resultado.imovel.cidade }}</td>
                     <td>{{ resultado.imovel.bairro }}</td>
-                    <td>R$ {{ resultado.imovel.valor }}</td>
+                    <td>{{ resultado.imovel.valor|moeda }}</td>
                     <td>
                         <div class="progress" style="height: 22px;">
                             <div class="progress-bar" style="width: {{ resultado.compatibilidade }}%">{{ resultado.compatibilidade }}%</div>

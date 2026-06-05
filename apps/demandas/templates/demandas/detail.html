@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load moeda_filters %}
 
 {% block title %}Demanda - ImobiGest CRM{% endblock %}
 
@@ -28,7 +29,9 @@
                 <p><strong>Status:</strong> {{ demanda.get_status_display }}</p>
                 <p><strong>Faixa de valor:</strong>
                     {% if demanda.valor_minimo or demanda.valor_maximo %}
-                        R$ {{ demanda.valor_minimo|default:"0" }} — R$ {{ demanda.valor_maximo|default:"—" }}
+                        {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
+                        —
+                        {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
                     {% else %}—{% endif %}
                 </p>
                 <p><strong>Cidade:</strong> {{ demanda.cidade|default:"—" }}</p>

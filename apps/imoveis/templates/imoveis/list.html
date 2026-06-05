@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load moeda_filters %}
 
 {% block title %}Imóveis - ImobiGest CRM{% endblock %}
 
@@ -107,7 +108,7 @@
                     <td><a href="{% url 'imoveis:detail' imovel.pk %}">{{ imovel.titulo }}</a></td>
                     <td>{{ imovel.cidade }}</td>
                     <td>{{ imovel.bairro }}</td>
-                    <td>R$ {{ imovel.valor }}</td>
+                    <td>{{ imovel.valor|moeda }}</td>
                     <td><span class="badge bg-secondary">{{ imovel.get_status_display }}</span></td>
                     <td class="table-actions text-end">
                         <a href="{% url 'imoveis:detail' imovel.pk %}" class="btn btn-sm btn-outline-info">Ver</a>

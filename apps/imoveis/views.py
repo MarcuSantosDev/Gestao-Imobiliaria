@@ -15,7 +15,10 @@ import os
 import zipfile
 
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
 
 
 class ImovelListView(ListView):
@@ -98,6 +101,12 @@ class ImovelUpdateView(LocalidadesFormMixin, UpdateView):
     template_name = 'imoveis/form.html'
     success_url = reverse_lazy('imoveis:list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['fotos_existentes'] = self.object.fotos.all()
+        context['total_fotos'] = self.object.fotos.count()
+        return context
+
     def form_valid(self, form):
         response = super().form_valid(form)
         self._salvar_fotos(self.object)
@@ -135,3 +144,15 @@ class ImovelCompartilharFotosView(View):
         response = HttpResponse(buffer.getvalue(), content_type='application/zip')
         response['Content-Disposition'] = f'attachment; filename="{nome_arquivo}"'
         return response
+
+
+@method_decorator(require_POST, name='dispatch')
+class FotoImovelDeleteView(View):
+    def post(self, request, foto_pk):
+        foto = get_object_or_404(FotoImovel, pk=foto_pk)
+        imovel_id = foto.imovel_id
+        if foto.imagem:
+            foto.imagem.delete(save=False)
+        foto.delete()
+        total = FotoImovel.objects.filter(imovel_id=imovel_id).count()
+        return JsonResponse({'ok': True, 'total_fotos': total})

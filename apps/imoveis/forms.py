@@ -30,6 +30,12 @@ class ImovelForm(forms.ModelForm):
             'infraestrutura': forms.CheckboxSelectMultiple,
             'cidade': forms.Select(attrs={'id': 'id_cidade'}),
             'bairro': forms.Select(attrs={'id': 'id_bairro'}),
+            'valor': forms.NumberInput(attrs={
+                'step': '0.01',
+                'min': '0',
+                'placeholder': '0,00',
+                'class': 'form-control',
+            }),
         }
 
     def __init__(self, *args, **kwargs):

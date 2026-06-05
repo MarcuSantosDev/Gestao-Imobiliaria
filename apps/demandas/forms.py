@@ -29,6 +29,8 @@ class DemandaForm(forms.ModelForm):
         widgets = {
             'infraestrutura': forms.CheckboxSelectMultiple,
             'cidade': forms.Select(attrs={'id': 'id_cidade'}),
+            'valor_minimo': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'placeholder': '0,00'}),
+            'valor_maximo': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'placeholder': '0,00'}),
         }
 
     def __init__(self, *args, **kwargs):
