@@ -1,11 +1,14 @@
 {% extends 'base.html' %}
 {% load moeda_filters %}
 
-{% block title %}Relatório de Demandas - ImobiGest CRM{% endblock %}
+{% block title %}Histórico de Demandas - ImobiGest CRM{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Relatório de Demandas</h1>
+    <div>
+        <h1>Histórico de Demandas</h1>
+        <p class="text-muted mb-0">Demandas finalizadas</p>
+    </div>
     <button onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> Imprimir</button>
 </div>
 
@@ -15,30 +18,45 @@
             <thead>
                 <tr>
                     <th>Cliente</th>
-                    <th>Data</th>
+                    <th>Finalizada em</th>
                     <th>Tipo</th>
                     <th>Cidade</th>
                     <th>Faixa de valor</th>
+                    <th class="text-end no-print">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for demanda in demandas %}
                 <tr>
                     <td>{{ demanda.cliente.nome }}</td>
-                    <td>{{ demanda.criado_em|date:"d/m/Y H:i" }}</td>
+                    <td>{{ demanda.atendida_em|date:"d/m/Y H:i" }}</td>
                     <td>{{ demanda.get_tipo_imovel_display }}</td>
                     <td>{{ demanda.cidade|default:"—" }}</td>
                     <td>
                         {% if demanda.valor_minimo or demanda.valor_maximo %}
-                            {{ demanda.valor_minimo|moeda }} — {{ demanda.valor_maximo|moeda }}
+                            {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
+                            —
+                            {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
                         {% else %}—{% endif %}
+                    </td>
+                    <td class="text-end no-print">
+                        <form method="post" action="{% url 'historico:demandas_reabrir' demanda.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-warning">Reabrir demanda</button>
+                        </form>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-muted">Sem dados.</td></tr>
+                <tr><td colspan="6" class="text-muted">Nenhuma demanda finalizada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<style>
+@media print {
+    .no-print { display: none !important; }
+}
+</style>
 {% endblock %}

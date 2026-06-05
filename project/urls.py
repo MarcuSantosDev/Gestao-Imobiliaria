@@ -10,7 +10,7 @@ urlpatterns = [
     path('corretores/', include('apps.corretores.urls')),
     path('imoveis/', include('apps.imoveis.urls')),
     path('demandas/', include('apps.demandas.urls')),
-    path('relatorios/', include('apps.relatorios.urls')),
+    path('historico/', include('apps.relatorios.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 
 from apps.imoveis.fields import MoedaDecimalField
 from apps.imoveis.localidades import CIDADES, bairros_da_cidade
@@ -43,6 +44,13 @@ class DemandaForm(forms.ModelForm):
         self.fields['bairros_selecionados'].choices = [(b, b) for b in bairros]
         if self.instance and self.instance.bairros:
             self.fields['bairros_selecionados'].initial = self.instance.get_bairros_lista()
+        if not self.instance.pk:
+            self.fields.pop('status', None)
+        else:
+            self.fields['status'].choices = [
+                ('aberta', 'Aberta'),
+                ('atendida', 'Finalizada'),
+            ]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -59,6 +67,13 @@ class DemandaForm(forms.ModelForm):
         bairros = self.cleaned_data.get('bairros_selecionados', [])
         instance.bairros = ', '.join(bairros)
         instance.bairro = bairros[0] if bairros else None
+        if not instance.pk:
+            instance.status = 'aberta'
+            instance.atendida_em = None
+        elif instance.status == 'atendida' and not instance.atendida_em:
+            instance.atendida_em = timezone.now()
+        elif instance.status == 'aberta':
+            instance.atendida_em = None
         if commit:
             instance.save()
             self.save_m2m()

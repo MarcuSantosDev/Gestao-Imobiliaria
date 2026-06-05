@@ -129,7 +129,7 @@ class DemandaCliente(models.Model):
 
     STATUS_CHOICES = [
         ('aberta', 'Aberta'),
-        ('atendida', 'Atendida'),
+        ('atendida', 'Finalizada'),
     ]
 
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
@@ -161,6 +161,7 @@ class DemandaCliente(models.Model):
     infraestrutura = models.ManyToManyField('Infraestrutura', blank=True)
 
     criado_em = models.DateTimeField(auto_now_add=True)
+    atendida_em = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.cliente.nome} - {self.tipo_imovel}"

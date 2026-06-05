@@ -3,6 +3,7 @@ import json
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
 from apps.imoveis.localidades import BAIRROS
@@ -19,7 +20,7 @@ class DemandaListView(ListView):
     context_object_name = 'demandas'
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related('cliente')
+        qs = DemandaCliente.objects.filter(status='aberta').select_related('cliente')
         busca = self.request.GET.get('q', '').strip()
         if busca:
             qs = qs.filter(cliente__nome__icontains=busca)
@@ -30,6 +31,13 @@ class DemandaDetailView(DetailView):
     model = DemandaCliente
     template_name = 'demandas/detail.html'
     context_object_name = 'demanda'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status == 'atendida':
+            messages.info(request, 'Esta demanda já foi finalizada e está no histórico.')
+            return redirect('historico:demandas')
+        return super().get(request, *args, **kwargs)
 
 
 class DemandaFormMixin(LocalidadesFormMixin):
@@ -53,17 +61,34 @@ class DemandaUpdateView(DemandaFormMixin, UpdateView):
     template_name = 'demandas/form.html'
     success_url = reverse_lazy('demandas:list')
 
+    def get_queryset(self):
+        return DemandaCliente.objects.filter(status='aberta')
+
+    def form_valid(self, form):
+        self.object = form.save()
+        if self.object.status == 'atendida':
+            messages.success(self.request, 'Demanda finalizada e movida para o histórico.')
+            return redirect('historico:demandas')
+        messages.success(self.request, 'Demanda atualizada com sucesso.')
+        return redirect(self.success_url)
+
 
 class DemandaDeleteView(DeleteView):
     model = DemandaCliente
     template_name = 'demandas/confirm_delete.html'
     success_url = reverse_lazy('demandas:list')
 
+    def get_queryset(self):
+        return DemandaCliente.objects.filter(status='aberta')
+
 
 class DemandaBuscaView(DetailView):
     model = DemandaCliente
     template_name = 'demandas/busca.html'
     context_object_name = 'demanda'
+
+    def get_queryset(self):
+        return DemandaCliente.objects.filter(status='aberta')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -73,8 +98,9 @@ class DemandaBuscaView(DetailView):
 
 class DemandaAtenderView(View):
     def post(self, request, pk):
-        demanda = get_object_or_404(DemandaCliente, pk=pk)
+        demanda = get_object_or_404(DemandaCliente, pk=pk, status='aberta')
         demanda.status = 'atendida'
+        demanda.atendida_em = timezone.now()
         demanda.save()
-        messages.success(request, 'Demanda marcada como atendida.')
-        return redirect('demandas:detail', pk=pk)
+        messages.success(request, 'Demanda finalizada e movida para o histórico.')
+        return redirect('historico:demandas')

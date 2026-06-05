@@ -1,37 +1,43 @@
-from django.db.models import Count
-from django.views.generic import TemplateView
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import TemplateView, View
 
-from apps.imoveis.models import Corretor, DemandaCliente, Imovel
+from apps.imoveis.models import DemandaCliente, Imovel
 
-
-class RelatoriosIndexView(TemplateView):
-    template_name = 'relatorios/index.html'
-
-
-class RelatorioImoveisView(TemplateView):
-    template_name = 'relatorios/imoveis.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['imoveis'] = Imovel.objects.select_related('categoria', 'corretor').order_by('titulo')
-        return context
+IMOVEIS_HISTORICO_STATUS = ('vendido', 'alugado', 'reservado')
 
 
-class RelatorioCorretoresView(TemplateView):
-    template_name = 'relatorios/corretores.html'
+class HistoricoIndexView(TemplateView):
+    template_name = 'historico/index.html'
+
+
+class HistoricoImoveisView(TemplateView):
+    template_name = 'historico/imoveis.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['corretores'] = Corretor.objects.annotate(
-            total_imoveis=Count('imovel_set')
-        ).order_by('nome')
+        context['imoveis'] = Imovel.objects.filter(
+            status__in=IMOVEIS_HISTORICO_STATUS
+        ).select_related('categoria', 'corretor').order_by('-id')
         return context
 
 
-class RelatorioDemandasView(TemplateView):
-    template_name = 'relatorios/demandas.html'
+class HistoricoDemandasView(TemplateView):
+    template_name = 'historico/demandas.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['demandas'] = DemandaCliente.objects.select_related('cliente').order_by('-criado_em')
+        context['demandas'] = DemandaCliente.objects.filter(
+            status='atendida'
+        ).select_related('cliente').order_by('-atendida_em')
         return context
+
+
+class DemandaReabrirView(View):
+    def post(self, request, pk):
+        demanda = get_object_or_404(DemandaCliente, pk=pk, status='atendida')
+        demanda.status = 'aberta'
+        demanda.atendida_em = None
+        demanda.save()
+        messages.success(request, 'Demanda reaberta e movida para a listagem de demandas.')
+        return redirect('demandas:list')

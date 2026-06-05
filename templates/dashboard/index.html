@@ -48,18 +48,22 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted">Demandas Abertas</h6>
-                <h2>{{ demandas_abertas }}</h2>
+        <a href="{% url 'demandas:list' %}" class="text-decoration-none text-body">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Demandas Abertas</h6>
+                    <h2>{{ demandas_abertas }}</h2>
+                    <small class="text-primary">Ver demandas abertas <i class="bi bi-arrow-right"></i></small>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-6">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm h-100">
             <div class="card-body">
-                <h6 class="text-muted">Demandas Atendidas</h6>
-                <h2>{{ demandas_atendidas }}</h2>
+                <h6 class="text-muted">Demandas Atendidas no Mês</h6>
+                <h2>{{ demandas_atendidas_mes }}</h2>
+                <small class="text-muted">{{ agora|date:"F/Y" }}</small>
             </div>
         </div>
     </div>
@@ -99,7 +103,7 @@
     </div>
     <div class="col-lg-6">
         <div class="card shadow-sm">
-            <div class="card-header bg-white"><strong>Últimas Demandas Cadastradas</strong></div>
+            <div class="card-header bg-white"><strong>Últimas Demandas em Aberto</strong></div>
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
                     <thead>

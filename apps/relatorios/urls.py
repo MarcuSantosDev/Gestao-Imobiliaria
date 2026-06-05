@@ -1,17 +1,17 @@
 from django.urls import path
 
 from .views import (
-    RelatorioCorretoresView,
-    RelatorioDemandasView,
-    RelatorioImoveisView,
-    RelatoriosIndexView,
+    DemandaReabrirView,
+    HistoricoDemandasView,
+    HistoricoImoveisView,
+    HistoricoIndexView,
 )
 
-app_name = 'relatorios'
+app_name = 'historico'
 
 urlpatterns = [
-    path('', RelatoriosIndexView.as_view(), name='index'),
-    path('imoveis/', RelatorioImoveisView.as_view(), name='imoveis'),
-    path('corretores/', RelatorioCorretoresView.as_view(), name='corretores'),
-    path('demandas/', RelatorioDemandasView.as_view(), name='demandas'),
+    path('', HistoricoIndexView.as_view(), name='index'),
+    path('imoveis/', HistoricoImoveisView.as_view(), name='imoveis'),
+    path('demandas/', HistoricoDemandasView.as_view(), name='demandas'),
+    path('demandas/<int:pk>/reabrir/', DemandaReabrirView.as_view(), name='demandas_reabrir'),
 ]

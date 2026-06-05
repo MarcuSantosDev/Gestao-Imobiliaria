@@ -11,7 +11,7 @@
         {% if demanda.status == 'aberta' %}
         <form method="post" action="{% url 'demandas:atender' demanda.pk %}">
             {% csrf_token %}
-            <button class="btn btn-outline-success">Marcar como Atendida</button>
+            <button class="btn btn-outline-success">Finalizar demanda</button>
         </form>
         {% endif %}
         <a href="{% url 'demandas:update' demanda.pk %}" class="btn btn-outline-primary">Editar</a>
@@ -26,7 +26,6 @@
                 <h5>Preferências</h5>
                 <p><strong>Tipo:</strong> {{ demanda.get_tipo_imovel_display }}</p>
                 <p><strong>Finalidade:</strong> {{ demanda.get_finalidade_display }}</p>
-                <p><strong>Status:</strong> {{ demanda.get_status_display }}</p>
                 <p><strong>Faixa de valor:</strong>
                     {% if demanda.valor_minimo or demanda.valor_maximo %}
                         {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}

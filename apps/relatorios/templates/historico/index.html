@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Histórico - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Histórico</h1>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5>Histórico de Imóveis</h5>
+                <p class="text-muted">Imóveis vendidos, alugados ou reservados.</p>
+                <a href="{% url 'historico:imoveis' %}" class="btn btn-primary">Abrir</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5>Histórico de Demandas</h5>
+                <p class="text-muted">Demandas finalizadas com data e hora do atendimento.</p>
+                <a href="{% url 'historico:demandas' %}" class="btn btn-primary">Abrir</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
