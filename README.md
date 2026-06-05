@@ -1,4 +1,4 @@
-# ImobiGest CRM
+# Gestão Imobiliária - CRM
 
 Sistema web para gestão imobiliária: imóveis, clientes, corretores, demandas e relatórios.
 
@@ -12,10 +12,8 @@ Sistema web para gestão imobiliária: imóveis, clientes, corretores, demandas 
 ```bash
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_dados
+python manage.py
 ```
-
-## Executar localmente
 
 ```bash
 python manage.py runserver

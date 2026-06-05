@@ -123,7 +123,7 @@ class ImovelDeleteView(DeleteView):
 
 class ImovelCompartilharTextoView(View):
     def get(self, request, pk):
-        imovel = Imovel.objects.select_related('corretor').prefetch_related('infraestrutura').get(pk=pk)
+        imovel = Imovel.objects.select_related('corretor', 'categoria').prefetch_related('infraestrutura').get(pk=pk)
         return JsonResponse({'texto': gerar_texto_compartilhamento(imovel)})
 
 

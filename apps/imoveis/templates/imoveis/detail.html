@@ -13,8 +13,13 @@
         <h1>{{ imovel.titulo }}</h1>
         <p class="text-muted mb-0">{{ imovel.get_finalidade_display }} · {{ imovel.get_status_display }}</p>
     </div>
-    <div class="d-flex gap-2">
-        <button id="btnCompartilhar" class="btn btn-success"><i class="bi bi-whatsapp"></i> Compartilhar Imóvel</button>
+    <div class="d-flex flex-wrap gap-2">
+        <button id="btnWhatsapp" type="button" class="btn btn-success">
+            <i class="bi bi-whatsapp"></i> Compartilhar no WhatsApp
+        </button>
+        <a id="btnBaixarFotos" href="{% url 'imoveis:compartilhar_fotos' imovel.pk %}" class="btn btn-outline-primary {% if not imovel.fotos.count %}disabled{% endif %}">
+            <i class="bi bi-download"></i> Baixar imagens
+        </a>
         <a href="{% url 'imoveis:update' imovel.pk %}" class="btn btn-outline-primary">Editar</a>
         <a href="{% url 'imoveis:list' %}" class="btn btn-secondary">Voltar</a>
     </div>
@@ -102,27 +107,41 @@
 {% block extra_js %}
 <script src="{% static 'js/fotos.js' %}"></script>
 <script>
-document.getElementById('btnCompartilhar').addEventListener('click', async () => {
-    const alertBox = document.getElementById('shareAlert');
+const alertBox = document.getElementById('shareAlert');
+
+function mostrarAlerta(mensagem, tipo = 'success') {
+    alertBox.textContent = mensagem;
+    alertBox.classList.remove('d-none', 'alert-success', 'alert-warning');
+    alertBox.classList.add(tipo === 'success' ? 'alert-success' : 'alert-warning');
+}
+
+document.getElementById('btnWhatsapp').addEventListener('click', async () => {
     try {
         const resp = await fetch("{% url 'imoveis:compartilhar_texto' imovel.pk %}");
         const data = await resp.json();
-        await navigator.clipboard.writeText(data.texto);
+        const texto = data.texto;
 
-        const link = document.createElement('a');
-        link.href = "{% url 'imoveis:compartilhar_fotos' imovel.pk %}";
-        link.download = '';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        try {
+            await navigator.clipboard.writeText(texto);
+        } catch (e) {
+            /* clipboard opcional */
+        }
 
-        alertBox.textContent = 'Descrição copiada com sucesso. Fotos baixadas. Abra o WhatsApp e envie ao cliente.';
-        alertBox.classList.remove('d-none');
+        const url = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+        window.open(url, '_blank');
+        mostrarAlerta('Texto copiado. WhatsApp aberto — selecione o contato e envie a mensagem.');
     } catch (e) {
-        alertBox.textContent = 'Não foi possível compartilhar. Verifique as permissões do navegador.';
-        alertBox.classList.remove('d-none', 'alert-success');
-        alertBox.classList.add('alert-warning');
+        mostrarAlerta('Não foi possível preparar o compartilhamento.', 'warning');
     }
+});
+
+document.getElementById('btnBaixarFotos')?.addEventListener('click', (event) => {
+    {% if not imovel.fotos.count %}
+    event.preventDefault();
+    mostrarAlerta('Este imóvel não possui fotos para download.', 'warning');
+    return;
+    {% endif %}
+    mostrarAlerta('Download iniciado. Verifique a pasta de downloads do seu navegador.');
 });
 </script>
 {% endblock %}

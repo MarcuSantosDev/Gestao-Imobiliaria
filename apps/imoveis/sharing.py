@@ -3,40 +3,40 @@ from apps.imoveis.utils import formatar_moeda
 
 def gerar_texto_compartilhamento(imovel):
     linhas = [
-        f"🏠 {imovel.titulo}",
+        imovel.titulo,
         "",
-        f"📍 {imovel.bairro}, {imovel.cidade}",
-        f"💰 {formatar_moeda(imovel.valor)}",
+        f"Local: {imovel.bairro}, {imovel.cidade}",
+        f"Valor: {formatar_moeda(imovel.valor)}",
     ]
 
+    if imovel.categoria:
+        linhas.append(f"Tipo: {imovel.categoria.nome} · {imovel.get_finalidade_display()}")
+
+    caracteristicas = []
     if imovel.dormitorios:
-        linhas.append(f"🛏 {imovel.dormitorios} quartos")
+        caracteristicas.append(f"Dormitórios: {imovel.dormitorios}")
+    if imovel.suites:
+        caracteristicas.append(f"Suítes: {imovel.suites}")
     if imovel.banheiros:
-        linhas.append(f"🚿 {imovel.banheiros} banheiros")
+        caracteristicas.append(f"Banheiros: {imovel.banheiros}")
     if imovel.vagas:
-        linhas.append(f"🚗 {imovel.vagas} vagas")
+        caracteristicas.append(f"Vagas: {imovel.vagas}")
+
+    if caracteristicas:
+        linhas.append('')
+        linhas.extend(caracteristicas)
 
     if imovel.posicao_solar:
-        linhas.append(f"☀️ {imovel.get_posicao_solar_display()}")
+        linhas.append(f"Posição solar: {imovel.get_posicao_solar_display()}")
 
     infra = imovel.infraestrutura.all()
-    emoji_map = {
-        'Piscina': '🏊 Piscina',
-        'Academia': '🏋 Academia',
-        'Salão de Festas': '🎉 Salão de Festas',
-        'Portaria 24h': '🛡 Portaria 24h',
-        'Elevador': '🛗 Elevador',
-        'Varanda': '🌿 Varanda',
-        'Vagas Cobertas': '🚗 Vagas Cobertas',
-    }
-    for item in infra:
-        linhas.append(emoji_map.get(item.nome, f"✅ {item.nome}"))
+    if infra.exists():
+        linhas.append('')
+        linhas.append('Infraestrutura:')
+        for item in infra:
+            linhas.append(f"- {item.nome}")
 
-    if imovel.corretor:
-        linhas.extend([
-            "",
-            f"👨‍💼 Corretor {imovel.corretor.nome}",
-            f"📞 {imovel.corretor.telefone}",
-        ])
+    if imovel.descricao:
+        linhas.extend(['', imovel.descricao.strip()])
 
     return '\n'.join(linhas)
