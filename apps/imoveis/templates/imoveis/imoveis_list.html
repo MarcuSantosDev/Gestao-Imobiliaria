@@ -1,0 +1,12 @@
+<h1>Imóveis</h1>
+
+<a href="{% url 'imoveis:create' %}">Novo imóvel</a>
+
+<ul>
+  {% for i in imoveis %}
+    <li>
+      {{ i.titulo }} - R$ {{ i.valor }}
+      <a href="{% url 'imoveis:detail' i.id %}">Ver</a>
+    </li>
+  {% endfor %}
+</ul>

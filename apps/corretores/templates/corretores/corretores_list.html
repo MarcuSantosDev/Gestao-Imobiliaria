@@ -1,0 +1,11 @@
+<h1>Corretores</h1>
+
+<a href="{% url 'corretores:create' %}">Novo</a>
+
+<ul>
+  {% for c in corretores %}
+    <li>
+      {{ c.nome }} - {{ c.telefone }} ({{ c.tipo }})
+    </li>
+  {% endfor %}
+</ul>
