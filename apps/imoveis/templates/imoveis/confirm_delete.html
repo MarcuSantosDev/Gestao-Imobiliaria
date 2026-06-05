@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir Imóvel - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="h4">Excluir imóvel?</h1>
+        <p>Deseja excluir <strong>{{ object.titulo }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="btn btn-danger">Confirmar exclusão</button>
+            <a href="{% url 'imoveis:list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

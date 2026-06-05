@@ -8,6 +8,13 @@ class ClienteListView(ListView):
     template_name = 'clientes/list.html'
     context_object_name = 'clientes'
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        busca = self.request.GET.get('q', '').strip()
+        if busca:
+            qs = qs.filter(nome__icontains=busca)
+        return qs.order_by('-criado_em')
+
 
 class ClienteCreateView(CreateView):
     model = Cliente

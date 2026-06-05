@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Novo{% endif %} Cliente - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{% if object %}Editar{% else %}Novo{% endif %} Cliente</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                {{ field }}
+                {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary">Salvar</button>
+                <a href="{% url 'clientes:list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

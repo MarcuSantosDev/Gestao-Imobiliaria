@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-stat shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Total de Imóveis</h6>
+                <h2>{{ total_imoveis }}</h2>
+                <small class="text-success">{{ imoveis_disponiveis }} disponíveis</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Status dos Imóveis</h6>
+                <div class="small">
+                    <div>Vendidos: <strong>{{ imoveis_vendidos }}</strong></div>
+                    <div>Reservados: <strong>{{ imoveis_reservados }}</strong></div>
+                    <div>Alugados: <strong>{{ imoveis_alugados }}</strong></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Clientes</h6>
+                <h2>{{ total_clientes }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-stat shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Corretores</h6>
+                <h2>{{ total_corretores }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Demandas Abertas</h6>
+                <h2>{{ demandas_abertas }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h6 class="text-muted">Demandas Atendidas</h6>
+                <h2>{{ demandas_atendidas }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>Últimos Imóveis Cadastrados</strong></div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Imóvel</th>
+                            <th>Cidade</th>
+                            <th>Bairro</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for imovel in ultimos_imoveis %}
+                        <tr>
+                            <td><a href="{% url 'imoveis:detail' imovel.pk %}">{{ imovel.titulo }}</a></td>
+                            <td>{{ imovel.cidade }}</td>
+                            <td>{{ imovel.bairro }}</td>
+                            <td>R$ {{ imovel.valor }}</td>
+                            <td>{{ imovel.get_status_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted">Nenhum imóvel cadastrado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white"><strong>Últimas Demandas Cadastradas</strong></div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Tipo</th>
+                            <th>Cidade</th>
+                            <th>Bairro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demanda in ultimas_demandas %}
+                        <tr>
+                            <td><a href="{% url 'demandas:detail' demanda.pk %}">{{ demanda.cliente.nome }}</a></td>
+                            <td>{{ demanda.get_tipo_imovel_display }}</td>
+                            <td>{{ demanda.cidade|default:"—" }}</td>
+                            <td>{{ demanda.bairros|default:demanda.bairro|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-muted">Nenhuma demanda cadastrada.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

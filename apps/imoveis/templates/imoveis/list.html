@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Imóveis - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Imóveis</h1>
+    <a href="{% url 'imoveis:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Imóvel</a>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por título..." value="{{ request.GET.q }}">
+        <button class="btn btn-outline-secondary">Buscar</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width:80px">Foto</th>
+                    <th>Imóvel</th>
+                    <th>Cidade</th>
+                    <th>Bairro</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for imovel in imoveis %}
+                <tr>
+                    <td>
+                        {% with foto=imovel.fotos.first %}
+                        {% if foto %}
+                        <a href="{% url 'imoveis:detail' imovel.pk %}">
+                            <img src="{{ foto.imagem.url }}" alt="{{ imovel.titulo }}" class="rounded" style="width:64px;height:48px;object-fit:cover;">
+                        </a>
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="width:64px;height:48px;font-size:.75rem;">Sem foto</div>
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td><a href="{% url 'imoveis:detail' imovel.pk %}">{{ imovel.titulo }}</a></td>
+                    <td>{{ imovel.cidade }}</td>
+                    <td>{{ imovel.bairro }}</td>
+                    <td>R$ {{ imovel.valor }}</td>
+                    <td><span class="badge bg-secondary">{{ imovel.get_status_display }}</span></td>
+                    <td class="table-actions text-end">
+                        <a href="{% url 'imoveis:detail' imovel.pk %}" class="btn btn-sm btn-outline-info">Ver</a>
+                        <a href="{% url 'imoveis:update' imovel.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <a href="{% url 'imoveis:delete' imovel.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-muted">Nenhum imóvel cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Busca Inteligente - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Busca Inteligente</h1>
+        <p class="text-muted mb-0">Demanda de {{ demanda.cliente.nome }} — {{ demanda.get_tipo_imovel_display }} para {{ demanda.get_finalidade_display }}</p>
+    </div>
+    <a href="{% url 'demandas:detail' demanda.pk %}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6>Filtros obrigatórios aplicados</h6>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-danger">Tipo: {{ demanda.get_tipo_imovel_display }}</span>
+            <span class="badge bg-danger">Finalidade: {{ demanda.get_finalidade_display }}</span>
+            {% if demanda.valor_minimo or demanda.valor_maximo %}
+            <span class="badge bg-danger">Valor: R$ {{ demanda.valor_minimo|default:"0" }} - R$ {{ demanda.valor_maximo|default:"∞" }}</span>
+            {% endif %}
+            {% if demanda.cidade %}
+            <span class="badge bg-danger">Cidade: {{ demanda.cidade }}</span>
+            {% endif %}
+            {% if demanda.bairros or demanda.bairro %}
+            <span class="badge bg-danger">Bairros: {{ demanda.bairros|default:demanda.bairro }}</span>
+            {% endif %}
+        </div>
+        <p class="text-muted small mb-0 mt-2">Imóveis fora da faixa de preço, cidade ou bairros selecionados não aparecem nos resultados.</p>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Imóvel</th>
+                    <th>Cidade</th>
+                    <th>Bairro</th>
+                    <th>Valor</th>
+                    <th>Compatibilidade</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resultado in resultados %}
+                <tr>
+                    <td>{{ resultado.imovel.titulo }}</td>
+                    <td>{{ resultado.imovel.cidade }}</td>
+                    <td>{{ resultado.imovel.bairro }}</td>
+                    <td>R$ {{ resultado.imovel.valor }}</td>
+                    <td>
+                        <div class="progress" style="height: 22px;">
+                            <div class="progress-bar" style="width: {{ resultado.compatibilidade }}%">{{ resultado.compatibilidade }}%</div>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'imoveis:detail' resultado.imovel.pk %}" class="btn btn-sm btn-outline-info">Ver detalhes</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">Nenhum imóvel compatível encontrado. Verifique cidade, bairros e faixa de valor.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

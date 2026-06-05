@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Clientes - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Clientes</h1>
+    <a href="{% url 'clientes:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Cliente</a>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por nome..." value="{{ request.GET.q }}">
+        <button class="btn btn-outline-secondary">Buscar</button>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>E-mail</th>
+                    <th>Cadastro</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.nome }}</td>
+                    <td>{{ cliente.telefone }}</td>
+                    <td>{{ cliente.email|default:"—" }}</td>
+                    <td>{{ cliente.criado_em|date:"d/m/Y" }}</td>
+                    <td class="table-actions text-end">
+                        <a href="{% url 'clientes:update' cliente.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <a href="{% url 'clientes:delete' cliente.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">Nenhum cliente cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

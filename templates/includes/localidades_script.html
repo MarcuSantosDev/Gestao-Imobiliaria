@@ -1,0 +1,58 @@
+{{ bairros_json|json_script:"bairros-data" }}
+<script>
+(function () {
+    const bairrosData = JSON.parse(document.getElementById('bairros-data').textContent);
+    const cidadeSelect = document.getElementById('id_cidade');
+    if (!cidadeSelect) return;
+
+    const bairroSelect = document.getElementById('id_bairro');
+    const bairrosContainer = document.getElementById('bairros-container');
+    const selectedBairros = new Set({{ bairros_selecionados_json|default:'[]'|safe }});
+
+    function uniqueBairros(cidade) {
+        const lista = bairrosData[cidade] || [];
+        return [...new Set(lista)];
+    }
+
+    function atualizarBairroSelect() {
+        if (!bairroSelect) return;
+        const cidade = cidadeSelect.value;
+        const bairros = uniqueBairros(cidade);
+        const valorAtual = bairroSelect.value;
+        bairroSelect.innerHTML = '<option value="">Selecione o bairro</option>';
+        bairros.forEach((bairro) => {
+            const option = document.createElement('option');
+            option.value = bairro;
+            option.textContent = bairro;
+            if (bairro === valorAtual) option.selected = true;
+            bairroSelect.appendChild(option);
+        });
+    }
+
+    function atualizarBairrosDemanda() {
+        if (!bairrosContainer) return;
+        const cidade = cidadeSelect.value;
+        const bairros = uniqueBairros(cidade);
+        bairrosContainer.innerHTML = '';
+        bairros.forEach((bairro) => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 col-sm-6';
+            const id = `bairro_${bairro.replace(/\W/g, '_')}`;
+            col.innerHTML = `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="bairros_selecionados" value="${bairro}" id="${id}" ${selectedBairros.has(bairro) ? 'checked' : ''}>
+                    <label class="form-check-label" for="${id}">${bairro}</label>
+                </div>`;
+            bairrosContainer.appendChild(col);
+        });
+    }
+
+    cidadeSelect.addEventListener('change', () => {
+        atualizarBairroSelect();
+        atualizarBairrosDemanda();
+    });
+
+    atualizarBairroSelect();
+    atualizarBairrosDemanda();
+})();
+</script>

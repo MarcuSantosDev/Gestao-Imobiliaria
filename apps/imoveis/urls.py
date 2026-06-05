@@ -9,4 +9,6 @@ urlpatterns = [
     path('<int:pk>/', ImovelDetailView.as_view(), name='detail'),
     path('editar/<int:pk>/', ImovelUpdateView.as_view(), name='update'),
     path('deletar/<int:pk>/', ImovelDeleteView.as_view(), name='delete'),
+    path('<int:pk>/compartilhar/texto/', ImovelCompartilharTextoView.as_view(), name='compartilhar_texto'),
+    path('<int:pk>/compartilhar/fotos/', ImovelCompartilharFotosView.as_view(), name='compartilhar_fotos'),
 ]

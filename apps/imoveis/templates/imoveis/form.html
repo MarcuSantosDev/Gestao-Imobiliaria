@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Novo{% endif %} Imóvel - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">{% if object %}Editar{% else %}Novo{% endif %} Imóvel</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                {% for field in form %}
+                {% if field.name != 'infraestrutura' %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Fotos</label>
+                    <input type="file" name="fotos" class="form-control" multiple accept="image/*">
+                    <div class="form-text">Selecione uma ou mais fotos do imóvel.</div>
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label">Infraestrutura</label>
+                    <div class="row">
+                        {% for checkbox in form.infraestrutura %}
+                        <div class="col-md-4 col-sm-6">{{ checkbox }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary">Salvar</button>
+                <a href="{% url 'imoveis:list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% include 'includes/localidades_script.html' %}
+{% endblock %}

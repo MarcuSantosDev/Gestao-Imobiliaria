@@ -1,5 +1,7 @@
 from django.db import models
 
+from .localidades import CIDADE_CHOICES
+
 class Cliente(models.Model):
     nome = models.CharField(max_length=150)
     telefone = models.CharField(max_length=20)
@@ -64,6 +66,7 @@ class Imovel(models.Model):
     categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True)
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES)
 
+    cidade = models.CharField(max_length=50, choices=CIDADE_CHOICES, default='João Pessoa')
     bairro = models.CharField(max_length=100)
     endereco = models.CharField(max_length=255, blank=True, null=True)
 
@@ -124,45 +127,47 @@ class DemandaCliente(models.Model):
         ('locacao', 'Locação'),
     ]
 
+    STATUS_CHOICES = [
+        ('aberta', 'Aberta'),
+        ('atendida', 'Atendida'),
+    ]
+
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
 
     tipo_imovel = models.CharField(max_length=30, choices=TIPO_CHOICES)
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='aberta')
 
     valor_minimo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     valor_maximo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
+    cidade = models.CharField(max_length=50, choices=CIDADE_CHOICES, default='João Pessoa')
     bairro = models.CharField(max_length=100, blank=True, null=True)
+    bairros = models.CharField(max_length=500, blank=True, null=True, help_text='Bairros separados por vírgula')
 
     dormitorios = models.IntegerField(null=True, blank=True)
-    area_minima = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
-    elevador = models.CharField(
-        max_length=15,
-        choices=[('sim','Sim'), ('nao','Não'), ('indiferente','Indiferente')],
-        default='indiferente'
-    )
-
-    andar_maximo = models.IntegerField(null=True, blank=True)
-
-    varanda = models.CharField(
-        max_length=15,
-        choices=[('sim','Sim'), ('nao','Não'), ('indiferente','Indiferente')],
-        default='indiferente'
-    )
-
+    vagas = models.IntegerField(null=True, blank=True)
     posicao_solar = models.CharField(
         max_length=15,
-        choices=[('nascente','Nascente'), ('sul','Sul'), ('poente','Poente'), ('indiferente','Indiferente')],
-        default='indiferente'
+        choices=[
+            ('nascente', 'Nascente'),
+            ('sul', 'Sul'),
+            ('poente', 'Poente'),
+            ('indiferente', 'Indiferente'),
+        ],
+        default='indiferente',
     )
 
-    condominio_maximo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-
-    vagas = models.IntegerField(null=True, blank=True)
-    vagas_cobertas = models.IntegerField(null=True, blank=True)
+    infraestrutura = models.ManyToManyField('Infraestrutura', blank=True)
 
     criado_em = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.cliente.nome} - {self.tipo_imovel}"
+
+    def get_bairros_lista(self):
+        if self.bairros:
+            return [b.strip() for b in self.bairros.split(',') if b.strip()]
+        if self.bairro:
+            return [self.bairro]
+        return []

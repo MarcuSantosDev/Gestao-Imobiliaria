@@ -8,6 +8,13 @@ class CorretorListView(ListView):
     template_name = 'corretores/list.html'
     context_object_name = 'corretores'
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        busca = self.request.GET.get('q', '').strip()
+        if busca:
+            qs = qs.filter(nome__icontains=busca)
+        return qs.order_by('nome')
+
 
 class CorretorCreateView(CreateView):
     model = Corretor
