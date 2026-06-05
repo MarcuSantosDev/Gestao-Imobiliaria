@@ -1,10 +1,13 @@
 from django import forms
 
+from apps.imoveis.fields import MoedaDecimalField
 from .localidades import CIDADES, bairros_da_cidade
 from .models import Imovel
 
 
 class ImovelForm(forms.ModelForm):
+    valor = MoedaDecimalField(label='Valor', required=True)
+
     class Meta:
         model = Imovel
         fields = [
@@ -30,12 +33,6 @@ class ImovelForm(forms.ModelForm):
             'infraestrutura': forms.CheckboxSelectMultiple,
             'cidade': forms.Select(attrs={'id': 'id_cidade'}),
             'bairro': forms.Select(attrs={'id': 'id_bairro'}),
-            'valor': forms.NumberInput(attrs={
-                'step': '0.01',
-                'min': '0',
-                'placeholder': '0,00',
-                'class': 'form-control',
-            }),
         }
 
     def __init__(self, *args, **kwargs):

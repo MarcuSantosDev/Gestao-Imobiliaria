@@ -1,10 +1,14 @@
 from django import forms
 
+from apps.imoveis.fields import MoedaDecimalField
 from apps.imoveis.localidades import CIDADES, bairros_da_cidade
 from apps.imoveis.models import DemandaCliente
 
 
 class DemandaForm(forms.ModelForm):
+    valor_minimo = MoedaDecimalField(label='Valor mínimo', required=False)
+    valor_maximo = MoedaDecimalField(label='Valor máximo', required=False)
+
     bairros_selecionados = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple,
@@ -29,8 +33,6 @@ class DemandaForm(forms.ModelForm):
         widgets = {
             'infraestrutura': forms.CheckboxSelectMultiple,
             'cidade': forms.Select(attrs={'id': 'id_cidade'}),
-            'valor_minimo': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'placeholder': '0,00'}),
-            'valor_maximo': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'placeholder': '0,00'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -46,6 +48,10 @@ class DemandaForm(forms.ModelForm):
         cleaned_data = super().clean()
         if not cleaned_data.get('cidade'):
             self.add_error('cidade', 'Selecione a cidade.')
+        valor_min = cleaned_data.get('valor_minimo')
+        valor_max = cleaned_data.get('valor_maximo')
+        if valor_min is not None and valor_max is not None and valor_min > valor_max:
+            self.add_error('valor_maximo', 'O valor máximo deve ser maior ou igual ao mínimo.')
         return cleaned_data
 
     def save(self, commit=True):

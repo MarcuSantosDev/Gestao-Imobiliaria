@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{% if object %}Editar{% else %}Nova{% endif %} Demanda - ImobiGest CRM{% endblock %}
 
@@ -43,4 +44,5 @@
 
 {% block extra_js %}
 {% include 'includes/localidades_script.html' %}
+<script src="{% static 'js/moeda.js' %}"></script>
 {% endblock %}

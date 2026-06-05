@@ -22,7 +22,6 @@
                 <div class="col-md-6 mb-3 {% if field.name == 'descricao' %}col-12{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
                         {{ field.label }}{% if field.field.required %} *{% endif %}
-                        {% if field.name == 'valor' %}<small class="text-muted">(ex: 350000.00)</small>{% endif %}
                     </label>
                     {{ field }}
                     {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
@@ -89,5 +88,6 @@
 
 {% block extra_js %}
 {% include 'includes/localidades_script.html' %}
+<script src="{% static 'js/moeda.js' %}"></script>
 <script src="{% static 'js/fotos.js' %}"></script>
 {% endblock %}

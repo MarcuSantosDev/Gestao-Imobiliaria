@@ -1,6 +1,6 @@
-from decimal import Decimal, InvalidOperation
-
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
+
+from apps.imoveis.fields import parse_moeda_br
 
 from apps.imoveis.localidades import BAIRROS, CIDADES, bairros_da_cidade
 from apps.imoveis.models import Categoria
@@ -44,15 +44,13 @@ class ImovelListView(ListView):
         if categoria := params.get('categoria', '').strip():
             qs = qs.filter(categoria_id=categoria)
         if valor_min := params.get('valor_min', '').strip():
-            try:
-                qs = qs.filter(valor__gte=Decimal(valor_min))
-            except InvalidOperation:
-                pass
+            parsed = parse_moeda_br(valor_min)
+            if parsed is not None:
+                qs = qs.filter(valor__gte=parsed)
         if valor_max := params.get('valor_max', '').strip():
-            try:
-                qs = qs.filter(valor__lte=Decimal(valor_max))
-            except InvalidOperation:
-                pass
+            parsed = parse_moeda_br(valor_max)
+            if parsed is not None:
+                qs = qs.filter(valor__lte=parsed)
 
         return qs.order_by('-id')
 

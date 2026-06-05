@@ -8,12 +8,21 @@ TIPO_CATEGORIA_MAP = {
     'comercial': ['comercial', 'sala comercial', 'galpão', 'galpao'],
 }
 
+PONTOS_POR_INFRA = 5
+
 
 def _tipo_compativel(demanda, imovel):
     if not imovel.categoria:
         return False
     nomes = TIPO_CATEGORIA_MAP.get(demanda.tipo_imovel, [])
     return imovel.categoria.nome.lower() in nomes
+
+
+def _atende_minimo(solicitado, disponivel):
+    """Quartos/vagas: imóvel precisa ter igual ou mais que o pedido na demanda."""
+    if solicitado is None:
+        return True
+    return disponivel >= solicitado
 
 
 def _passa_filtros_obrigatorios(demanda, imovel):
@@ -45,11 +54,11 @@ def calcular_compatibilidade(demanda, imovel):
         pontos += 15
 
     max_pontos += 10
-    if demanda.dormitorios is None or imovel.dormitorios >= demanda.dormitorios:
+    if _atende_minimo(demanda.dormitorios, imovel.dormitorios):
         pontos += 10
 
     max_pontos += 10
-    if demanda.vagas is None or imovel.vagas >= demanda.vagas:
+    if _atende_minimo(demanda.vagas, imovel.vagas):
         pontos += 10
 
     max_pontos += 10
@@ -58,16 +67,13 @@ def calcular_compatibilidade(demanda, imovel):
     ):
         pontos += 10
 
-    infra_desejada = set(demanda.infraestrutura.values_list('id', flat=True))
-    max_pontos += 40
-    if not infra_desejada:
-        pontos += 40
-    else:
+    infra_desejada = list(demanda.infraestrutura.values_list('id', flat=True))
+    if infra_desejada:
+        max_pontos += len(infra_desejada) * PONTOS_POR_INFRA
         infra_imovel = set(imovel.infraestrutura.values_list('id', flat=True))
-        if infra_desejada.issubset(infra_imovel):
-            pontos += 40
-        else:
-            pontos += int(40 * len(infra_desejada & infra_imovel) / len(infra_desejada))
+        for infra_id in infra_desejada:
+            if infra_id in infra_imovel:
+                pontos += PONTOS_POR_INFRA
 
     if max_pontos == 0:
         return 0
