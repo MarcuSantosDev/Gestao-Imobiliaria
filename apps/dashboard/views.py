@@ -29,7 +29,7 @@ class DashboardView(TemplateView):
                 atendida_em__month=agora.month,
             ).count(),
             'agora': agora,
-            'ultimos_imoveis': imoveis.select_related('categoria').order_by('-id')[:5],
+            'ultimos_imoveis': imoveis.order_by('-id')[:5],
             'ultimas_demandas': demandas.filter(status='aberta').order_by('-criado_em')[:5],
         })
         return context

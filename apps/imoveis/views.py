@@ -3,8 +3,6 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from apps.imoveis.fields import parse_moeda_br
 
 from apps.imoveis.localidades import BAIRROS, CIDADES, bairros_da_cidade
-from apps.imoveis.models import Categoria
-
 from .forms import ImovelForm
 from .mixins import LocalidadesFormMixin
 from .models import FotoImovel, Imovel
@@ -28,7 +26,7 @@ class ImovelListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        qs = Imovel.objects.select_related('categoria', 'corretor').prefetch_related('fotos')
+        qs = Imovel.objects.select_related('corretor').prefetch_related('fotos')
         params = self.request.GET
 
         if q := params.get('q', '').strip():
@@ -41,8 +39,8 @@ class ImovelListView(ListView):
             qs = qs.filter(finalidade=finalidade)
         if status := params.get('status', '').strip():
             qs = qs.filter(status=status)
-        if categoria := params.get('categoria', '').strip():
-            qs = qs.filter(categoria_id=categoria)
+        if tipo := params.get('tipo', '').strip():
+            qs = qs.filter(tipo=tipo)
         if valor_min := params.get('valor_min', '').strip():
             parsed = parse_moeda_br(valor_min)
             if parsed is not None:
@@ -59,7 +57,7 @@ class ImovelListView(ListView):
         cidade = self.request.GET.get('cidade', '')
         context['bairros_json'] = BAIRROS
         context['cidades'] = CIDADES
-        context['categorias'] = Categoria.objects.order_by('nome')
+        context['tipo_choices'] = Imovel.TIPO_CHOICES
         context['bairros_filtro'] = bairros_da_cidade(cidade) if cidade else []
         context['finalidade_choices'] = Imovel.FINALIDADE_CHOICES
         context['status_choices'] = Imovel.STATUS_CHOICES
@@ -72,7 +70,7 @@ class ImovelDetailView(DetailView):
     context_object_name = 'imovel'
 
     def get_queryset(self):
-        return super().get_queryset().select_related('categoria', 'corretor').prefetch_related(
+        return super().get_queryset().select_related('corretor').prefetch_related(
             'fotos', 'infraestrutura'
         )
 
@@ -123,7 +121,7 @@ class ImovelDeleteView(DeleteView):
 
 class ImovelCompartilharTextoView(View):
     def get(self, request, pk):
-        imovel = Imovel.objects.select_related('corretor', 'categoria').prefetch_related('infraestrutura').get(pk=pk)
+        imovel = Imovel.objects.select_related('corretor').prefetch_related('infraestrutura').get(pk=pk)
         return JsonResponse({'texto': gerar_texto_compartilhamento(imovel)})
 
 

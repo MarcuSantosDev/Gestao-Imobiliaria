@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from .models import (
-    Categoria,
     Cliente,
     Corretor,
     DemandaCliente,
@@ -23,11 +22,6 @@ class CorretorAdmin(admin.ModelAdmin):
     search_fields = ('nome',)
 
 
-@admin.register(Categoria)
-class CategoriaAdmin(admin.ModelAdmin):
-    list_display = ('nome',)
-
-
 @admin.register(Infraestrutura)
 class InfraestruturaAdmin(admin.ModelAdmin):
     list_display = ('nome',)
@@ -40,8 +34,8 @@ class FotoImovelInline(admin.TabularInline):
 
 @admin.register(Imovel)
 class ImovelAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'cidade', 'bairro', 'valor', 'status', 'corretor')
-    list_filter = ('status', 'finalidade', 'categoria')
+    list_display = ('titulo', 'tipo', 'cidade', 'bairro', 'valor', 'status', 'finalizado_em', 'corretor')
+    list_filter = ('status', 'finalidade', 'tipo')
     search_fields = ('titulo', 'bairro')
     filter_horizontal = ('infraestrutura',)
     inlines = [FotoImovelInline]

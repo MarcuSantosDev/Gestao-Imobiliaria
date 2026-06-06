@@ -7,7 +7,6 @@ from django.utils import timezone
 
 from apps.imoveis.localidades import BAIRROS
 from apps.imoveis.models import (
-    Categoria,
     Cliente,
     Corretor,
     DemandaCliente,
@@ -32,27 +31,28 @@ class Command(BaseCommand):
             help='Quantidade de imóveis a criar (padrão: 50)',
         )
 
-    def _criar_imoveis(self, corretores, categorias, infra_list, quantidade):
+    def _criar_imoveis(self, corretores, infra_list, quantidade):
         tipos = [
-            ('Apartamento', 'venda'),
-            ('Casa', 'venda'),
-            ('Cobertura', 'venda'),
-            ('Terreno', 'venda'),
-            ('Comercial', 'locacao'),
-            ('Apartamento', 'locacao'),
-            ('Casa', 'locacao'),
+            ('apartamento', 'venda'),
+            ('casa', 'venda'),
+            ('cobertura', 'venda'),
+            ('terreno', 'venda'),
+            ('comercial', 'locacao'),
+            ('apartamento', 'locacao'),
+            ('casa', 'locacao'),
         ]
         statuses = ['disponivel', 'disponivel', 'disponivel', 'vendido', 'alugado', 'reservado']
         cidades = list(BAIRROS.keys())
+        agora = timezone.now()
 
         imoveis = []
         novos = 0
         for n in range(quantidade):
-            categoria_nome, finalidade = tipos[n % len(tipos)]
+            tipo, finalidade = tipos[n % len(tipos)]
             cidade = cidades[n % len(cidades)]
             bairro = BAIRROS[cidade][n % len(BAIRROS[cidade])]
             status = statuses[n % len(statuses)]
-            sem_quartos = categoria_nome in ('Terreno', 'Comercial')
+            sem_quartos = tipo in ('terreno', 'comercial')
             dormitorios = 0 if sem_quartos else (n % 4) + 1
             vagas = 0 if sem_quartos else min(dormitorios, 3)
 
@@ -61,11 +61,13 @@ class Command(BaseCommand):
             else:
                 valor = Decimal(str(280000 + n * 25000))
 
-            titulo = f'{categoria_nome} {bairro} #{n + 1}'
+            tipo_label = dict(Imovel.TIPO_CHOICES).get(tipo, tipo).title()
+            titulo = f'{tipo_label} {bairro} #{n + 1}'
+            finalizado_em = agora - timedelta(days=n) if status in Imovel.HISTORICO_STATUS else None
             imovel, created = Imovel.objects.get_or_create(
                 titulo=titulo,
                 defaults={
-                    'categoria': categorias.get(categoria_nome),
+                    'tipo': tipo,
                     'finalidade': finalidade,
                     'cidade': cidade,
                     'bairro': bairro,
@@ -75,6 +77,7 @@ class Command(BaseCommand):
                     'dormitorios': dormitorios,
                     'vagas': vagas,
                     'corretor': corretores[n % len(corretores)],
+                    'finalizado_em': finalizado_em,
                 },
             )
             if created:
@@ -95,7 +98,6 @@ class Command(BaseCommand):
 
         call_command('seed_dados')
 
-        categorias = {c.nome: c for c in Categoria.objects.all()}
         infra_list = list(Infraestrutura.objects.all())
 
         corretores = [
@@ -132,7 +134,7 @@ class Command(BaseCommand):
             clientes.append(cliente)
 
         imoveis, imoveis_novos = self._criar_imoveis(
-            corretores, categorias, infra_list, options['imoveis'],
+            corretores, infra_list, options['imoveis'],
         )
 
         agora = timezone.now()

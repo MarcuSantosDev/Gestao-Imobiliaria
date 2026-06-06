@@ -17,7 +17,9 @@
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
+                    <th>Finalizado em</th>
                     <th>Nome</th>
+                    <th>Tipo</th>
                     <th>Valor</th>
                     <th>Cidade</th>
                     <th>Bairro</th>
@@ -27,14 +29,16 @@
             <tbody>
                 {% for imovel in imoveis %}
                 <tr>
+                    <td>{{ imovel.finalizado_em|date:"d/m/Y H:i"|default:"—" }}</td>
                     <td>{{ imovel.titulo }}</td>
+                    <td>{{ imovel.get_tipo_display }}</td>
                     <td>{{ imovel.valor|moeda }}</td>
                     <td>{{ imovel.cidade }}</td>
                     <td>{{ imovel.bairro }}</td>
                     <td>{{ imovel.get_status_display }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-muted">Nenhum imóvel vendido, alugado ou reservado.</td></tr>
+                <tr><td colspan="7" class="text-muted">Nenhum imóvel vendido, alugado ou reservado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

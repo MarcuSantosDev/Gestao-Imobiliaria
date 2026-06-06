@@ -9,8 +9,8 @@ def gerar_texto_compartilhamento(imovel):
         f"Valor: {formatar_moeda(imovel.valor)}",
     ]
 
-    if imovel.categoria:
-        linhas.append(f"Tipo: {imovel.categoria.nome} · {imovel.get_finalidade_display()}")
+    if imovel.tipo:
+        linhas.append(f"Tipo: {imovel.get_tipo_display()} · {imovel.get_finalidade_display()}")
 
     caracteristicas = []
     if imovel.dormitorios:

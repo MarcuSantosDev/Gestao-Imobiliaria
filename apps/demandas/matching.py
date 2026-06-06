@@ -1,21 +1,10 @@
 from apps.imoveis.models import Imovel
 
-TIPO_CATEGORIA_MAP = {
-    'casa': ['casa'],
-    'apartamento': ['apartamento'],
-    'cobertura': ['cobertura'],
-    'terreno': ['terreno'],
-    'comercial': ['comercial', 'sala comercial', 'galpão', 'galpao'],
-}
-
 PONTOS_POR_INFRA = 5
 
 
 def _tipo_compativel(demanda, imovel):
-    if not imovel.categoria:
-        return False
-    nomes = TIPO_CATEGORIA_MAP.get(demanda.tipo_imovel, [])
-    return imovel.categoria.nome.lower() in nomes
+    return imovel.tipo == demanda.tipo_imovel
 
 
 def _atende_minimo(solicitado, disponivel):
@@ -83,7 +72,7 @@ def calcular_compatibilidade(demanda, imovel):
 def buscar_imoveis_compativeis(demanda, min_compatibilidade=0):
     resultados = []
     imoveis = Imovel.objects.filter(status='disponivel').select_related(
-        'categoria', 'corretor'
+        'corretor'
     ).prefetch_related('infraestrutura')
 
     for imovel in imoveis:

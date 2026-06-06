@@ -35,11 +35,11 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Categoria</label>
-                <select name="categoria" class="form-select">
-                    <option value="">Todas</option>
-                    {% for cat in categorias %}
-                    <option value="{{ cat.pk }}" {% if request.GET.categoria == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.nome }}</option>
+                <label class="form-label">Tipo</label>
+                <select name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in tipo_choices %}
+                    <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>

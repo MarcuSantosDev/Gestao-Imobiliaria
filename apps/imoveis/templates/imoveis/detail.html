@@ -68,7 +68,7 @@
                 <p><strong>Cidade:</strong> {{ imovel.cidade }}</p>
                 <p><strong>Bairro:</strong> {{ imovel.bairro }}</p>
                 {% if imovel.endereco %}<p><strong>Endereço:</strong> {{ imovel.endereco }}</p>{% endif %}
-                <p><strong>Categoria:</strong> {{ imovel.categoria }}</p>
+                <p><strong>Tipo:</strong> {{ imovel.get_tipo_display }}</p>
                 {% if imovel.corretor %}
                 <p><strong>Corretor:</strong> {{ imovel.corretor.nome }} ({{ imovel.corretor.telefone }})</p>
                 {% endif %}

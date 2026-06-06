@@ -12,7 +12,7 @@ class ImovelForm(forms.ModelForm):
         model = Imovel
         fields = [
             'titulo',
-            'categoria',
+            'tipo',
             'finalidade',
             'cidade',
             'bairro',

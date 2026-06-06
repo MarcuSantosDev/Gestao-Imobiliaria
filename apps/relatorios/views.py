@@ -18,7 +18,7 @@ class HistoricoImoveisView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['imoveis'] = Imovel.objects.filter(
             status__in=IMOVEIS_HISTORICO_STATUS
-        ).select_related('categoria', 'corretor').order_by('-id')
+        ).select_related('corretor').order_by('-finalizado_em', '-id')
         return context
 
 
@@ -29,7 +29,7 @@ class HistoricoDemandasView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['demandas'] = DemandaCliente.objects.filter(
             status='atendida'
-        ).select_related('cliente').order_by('-atendida_em')
+        ).select_related('cliente').order_by('-atendida_em', '-id')
         return context
 
 

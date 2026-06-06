@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from .localidades import CIDADE_CHOICES
 
@@ -28,13 +29,6 @@ class Corretor(models.Model):
         return self.nome
     
 
-class Categoria(models.Model):
-    nome = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.nome
-    
-
 class Infraestrutura(models.Model):
     nome = models.CharField(max_length=100)
 
@@ -43,6 +37,16 @@ class Infraestrutura(models.Model):
     
 
 class Imovel(models.Model):
+
+    TIPO_CHOICES = [
+        ('casa', 'Casa'),
+        ('apartamento', 'Apartamento'),
+        ('cobertura', 'Cobertura'),
+        ('terreno', 'Terreno'),
+        ('comercial', 'Comercial'),
+    ]
+
+    HISTORICO_STATUS = ('vendido', 'alugado', 'reservado')
 
     STATUS_CHOICES = [
         ('disponivel', 'Disponível'),
@@ -63,7 +67,7 @@ class Imovel(models.Model):
     ]
 
     titulo = models.CharField(max_length=200)
-    categoria = models.ForeignKey('Categoria', on_delete=models.SET_NULL, null=True)
+    tipo = models.CharField(max_length=30, choices=TIPO_CHOICES, default='apartamento')
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES)
 
     cidade = models.CharField(max_length=50, choices=CIDADE_CHOICES, default='João Pessoa')
@@ -102,8 +106,18 @@ class Imovel(models.Model):
 
     infraestrutura = models.ManyToManyField('Infraestrutura', blank=True)
 
+    finalizado_em = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.titulo
+
+    def save(self, *args, **kwargs):
+        if self.status in self.HISTORICO_STATUS:
+            if not self.finalizado_em:
+                self.finalizado_em = timezone.now()
+        elif self.status == 'disponivel':
+            self.finalizado_em = None
+        super().save(*args, **kwargs)
     
 class FotoImovel(models.Model):
     imovel = models.ForeignKey('Imovel', on_delete=models.CASCADE, related_name='fotos')
