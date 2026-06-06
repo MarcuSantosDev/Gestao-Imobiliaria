@@ -1,0 +1,83 @@
+# ======================
+# Python
+# ======================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+env.bak/
+venv.bak/
+
+# ======================
+# Django
+# ======================
+*.log
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# Local settings
+local_settings.py
+
+# Django migrations cache (opcional)
+**/migrations/__pycache__/
+
+# ======================
+# IDEs
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ======================
+# OS files
+# ======================
+.DS_Store
+Thumbs.db
+
+# ======================
+# Environment variables
+# ======================
+.env
+.env.local
+.env.*.local
+
+# ======================
+# Coverage / testing
+# ======================
+htmlcov/
+.coverage
+coverage.xml
+.pytest_cache/
+.tox/
+
+# ======================
+# Celery (se usar)
+# ======================
+celerybeat-schedule
+celerybeat.pid
+
+# ======================
+# Jupyter (se usar)
+# ======================
+.ipynb_checkpoints/
+
+# ======================
+# Mypy / type check
+# ======================
+.mypy_cache/
+.dmypy.json
+
+# ======================
+# Docker (opcional)
+# ======================
+docker-compose.override.yml
