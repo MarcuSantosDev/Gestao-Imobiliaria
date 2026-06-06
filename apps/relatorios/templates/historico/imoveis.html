@@ -17,7 +17,17 @@
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
-                    <th>Finalizado em</th>
+                    <th>
+                        <a href="?{% querystring ordem=ordem_proxima page=1 %}" class="text-decoration-none text-body d-inline-flex align-items-center gap-1 no-print">
+                            Finalizado em
+                            {% if ordem == 'recente' %}
+                            <i class="bi bi-sort-down" title="Mais recentes primeiro — clique para mais antigos"></i>
+                            {% else %}
+                            <i class="bi bi-sort-up" title="Mais antigos primeiro — clique para mais recentes"></i>
+                            {% endif %}
+                        </a>
+                        <span class="d-none d-print-inline">Finalizado em</span>
+                    </th>
                     <th>Nome</th>
                     <th>Tipo</th>
                     <th>Valor</th>
@@ -43,5 +53,9 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<div class="no-print">
+    {% include 'includes/pagination.html' %}
 </div>
 {% endblock %}
