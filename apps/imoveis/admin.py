@@ -43,6 +43,8 @@ class ImovelAdmin(admin.ModelAdmin):
 
 @admin.register(DemandaCliente)
 class DemandaClienteAdmin(admin.ModelAdmin):
-    list_display = ('cliente', 'tipo_imovel', 'finalidade', 'cidade', 'status', 'criado_em', 'atendida_em')
-    list_filter = ('status', 'tipo_imovel', 'finalidade')
+    list_display = (
+        'cliente', 'tipo_imovel', 'finalidade', 'cidade', 'status', 'criado_em', 'atendida_em',
+    )
+    list_filter = ('status', 'tipo_imovel', 'finalidade', 'elevador', 'varanda')
     filter_horizontal = ('infraestrutura',)

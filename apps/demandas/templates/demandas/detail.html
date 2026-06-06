@@ -26,6 +26,9 @@
                 <h5>Preferências</h5>
                 <p><strong>Tipo:</strong> {{ demanda.get_tipo_imovel_display }}</p>
                 <p><strong>Finalidade:</strong> {{ demanda.get_finalidade_display }}</p>
+                <p><strong>Até que valor:</strong>
+                    {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
+                </p>
                 <p><strong>Faixa de valor:</strong>
                     {% if demanda.valor_minimo or demanda.valor_maximo %}
                         {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
@@ -35,6 +38,9 @@
                 </p>
                 <p><strong>Cidade:</strong> {{ demanda.cidade|default:"—" }}</p>
                 <p><strong>Bairros:</strong> {{ demanda.bairros|default:demanda.bairro|default:"—" }}</p>
+                {% if demanda.condominio_maximo %}
+                <p><strong>Condomínio máximo:</strong> {{ demanda.condominio_maximo|moeda }}</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -44,8 +50,17 @@
                 <h5>Características desejadas</h5>
                 <ul class="mb-0">
                     <li>Dormitórios mínimos: {{ demanda.dormitorios|default:"—" }}</li>
-                    <li>Vagas mínimas: {{ demanda.vagas|default:"—" }}</li>
+                    <li>Suítes mínimas: {{ demanda.suites|default:"—" }}</li>
+                    <li>Banheiros mínimos: {{ demanda.banheiros|default:"—" }}</li>
+                    <li>Área mínima: {% if demanda.area_minima %}{{ demanda.area_minima }} m²{% else %}—{% endif %}</li>
+                    <li>Elevador: {{ demanda.get_elevador_display }}</li>
+                    {% if demanda.elevador == 'sem' and demanda.andar_maximo %}
+                    <li>Andar máximo (sem elevador): {{ demanda.andar_maximo }}º</li>
+                    {% endif %}
+                    <li>Varanda: {{ demanda.get_varanda_display }}</li>
                     <li>Posição solar: {{ demanda.get_posicao_solar_display }}</li>
+                    <li>Vagas mínimas: {{ demanda.vagas|default:"—" }}</li>
+                    <li>Vagas cobertas mínimas: {{ demanda.vagas_cobertas|default:"—" }}</li>
                 </ul>
                 {% if demanda.infraestrutura.all %}
                 <h6 class="mt-3">Infraestrutura desejada</h6>
@@ -55,6 +70,36 @@
                     {% endfor %}
                 </ul>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5>Busca inteligente</h5>
+                <p class="text-muted small">Cidade e bairros são sempre obrigatórios na busca.</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Critérios obrigatórios</h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for label in demanda.get_filtros_obrigatorios_labels %}
+                            <span class="badge bg-danger">{{ label }}</span>
+                            {% empty %}
+                            <span class="text-muted">Nenhum</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Critérios de compatibilidade</h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for label in demanda.get_filtros_compatibilidade_labels %}
+                            <span class="badge bg-secondary">{{ label }}</span>
+                            {% empty %}
+                            <span class="text-muted">Nenhum</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

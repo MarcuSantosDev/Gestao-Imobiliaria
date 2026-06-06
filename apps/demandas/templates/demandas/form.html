@@ -10,29 +10,159 @@
     <div class="card-body">
         <form method="post">
             {% csrf_token %}
+
+            <h5 class="mb-3">Cliente e tipo</h5>
             <div class="row">
-                {% for field in form %}
-                {% if field.name != 'infraestrutura' and field.name != 'bairros_selecionados' %}
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-                    {{ field }}
-                    {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                    <label class="form-label">{{ form.cliente.label }} *</label>
+                    {{ form.cliente }}
+                    {% if form.cliente.errors %}<div class="text-danger small">{{ form.cliente.errors }}</div>{% endif %}
                 </div>
-                {% endif %}
-                {% endfor %}
-                <div class="col-12 mb-3">
-                    <label class="form-label">Bairros desejados</label>
-                    <div id="bairros-container" class="row"></div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.tipo_imovel.label }} *</label>
+                    {{ form.tipo_imovel }}
+                    {% if form.tipo_imovel.errors %}<div class="text-danger small">{{ form.tipo_imovel.errors }}</div>{% endif %}
                 </div>
-                <div class="col-12 mb-3">
-                    <label class="form-label">Infraestrutura desejada</label>
-                    <div class="row">
-                        {% for checkbox in form.infraestrutura %}
-                        <div class="col-md-4 col-sm-6">{{ checkbox }}</div>
-                        {% endfor %}
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.finalidade.label }} *</label>
+                    {{ form.finalidade }}
+                    {% if form.finalidade.errors %}<div class="text-danger small">{{ form.finalidade.errors }}</div>{% endif %}
                 </div>
             </div>
+
+            <hr class="my-4">
+            <h5 class="mb-3">Valores e localização</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.valor_minimo.label }}</label>
+                    {{ form.valor_minimo }}
+                    {% if form.valor_minimo.errors %}<div class="text-danger small">{{ form.valor_minimo.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.valor_maximo.label }}</label>
+                    {{ form.valor_maximo }}
+                    {% if form.valor_maximo.errors %}<div class="text-danger small">{{ form.valor_maximo.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.condominio_maximo.label }}</label>
+                    {{ form.condominio_maximo }}
+                    {% if form.condominio_maximo.errors %}<div class="text-danger small">{{ form.condominio_maximo.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ form.cidade.label }} *</label>
+                    {{ form.cidade }}
+                    {% if form.cidade.errors %}<div class="text-danger small">{{ form.cidade.errors }}</div>{% endif %}
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Qual a região/bairros?</label>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-selecionar-todos-bairros">
+                            <i class="bi bi-check2-all"></i> Selecionar todos os bairros
+                        </button>
+                    </div>
+                    <div id="bairros-container" class="row"></div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <h5 class="mb-3">Características do imóvel</h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Quantos dormitórios?</label>
+                    {{ form.dormitorios }}
+                    {% if form.dormitorios.errors %}<div class="text-danger small">{{ form.dormitorios.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.suites.label }}</label>
+                    {{ form.suites }}
+                    {% if form.suites.errors %}<div class="text-danger small">{{ form.suites.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.banheiros.label }}</label>
+                    {{ form.banheiros }}
+                    {% if form.banheiros.errors %}<div class="text-danger small">{{ form.banheiros.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.area_minima.label }}</label>
+                    {{ form.area_minima }}
+                    {% if form.area_minima.errors %}<div class="text-danger small">{{ form.area_minima.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.posicao_solar.label }}</label>
+                    {{ form.posicao_solar }}
+                    {% if form.posicao_solar.errors %}<div class="text-danger small">{{ form.posicao_solar.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Prédio com ou sem elevador?</label>
+                    {{ form.elevador }}
+                    {% if form.elevador.errors %}<div class="text-danger small">{{ form.elevador.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3" id="andar-maximo-group">
+                    <label class="form-label">{{ form.andar_maximo.label }}</label>
+                    {{ form.andar_maximo }}
+                    {% if form.andar_maximo.errors %}<div class="text-danger small">{{ form.andar_maximo.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Com varanda?</label>
+                    {{ form.varanda }}
+                    {% if form.varanda.errors %}<div class="text-danger small">{{ form.varanda.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.vagas.label }}</label>
+                    {{ form.vagas }}
+                    {% if form.vagas.errors %}<div class="text-danger small">{{ form.vagas.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.vagas_cobertas.label }}</label>
+                    {{ form.vagas_cobertas }}
+                    {% if form.vagas_cobertas.errors %}<div class="text-danger small">{{ form.vagas_cobertas.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <hr class="my-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Infraestrutura desejada</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-selecionar-toda-infraestrutura">
+                    <i class="bi bi-check2-all"></i> Selecionar todas
+                </button>
+            </div>
+            <div class="row mb-4" id="infraestrutura-container">
+                {% for checkbox in form.infraestrutura %}
+                <div class="col-md-4 col-sm-6">{{ checkbox }}</div>
+                {% endfor %}
+            </div>
+
+            <hr class="my-4">
+            <h5 class="mb-2">Busca inteligente</h5>
+            <p class="text-muted small mb-3">
+                <strong>Cidade</strong> e <strong>bairros</strong> são sempre obrigatórios (definidos acima).
+                Marque abaixo critérios <em>adicionais</em> que excluem imóveis da busca.
+                Os demais critérios preenchidos influenciam apenas o nível de compatibilidade.
+            </p>
+            <div class="row mb-4">
+                {% for checkbox in form.filtros_obrigatorios_selecionados %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="form-check">
+                        {{ checkbox.tag }}
+                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if form.filtros_obrigatorios_selecionados.errors %}
+            <div class="text-danger small mb-3">{{ form.filtros_obrigatorios_selecionados.errors }}</div>
+            {% endif %}
+
+            {% if form.status %}
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">{{ form.status.label }}</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="d-flex gap-2">
                 <button class="btn btn-primary">Salvar</button>
                 <a href="{% url 'demandas:list' %}" class="btn btn-secondary">Cancelar</a>
@@ -45,4 +175,40 @@
 {% block extra_js %}
 {% include 'includes/localidades_script.html' %}
 <script src="{% static 'js/moeda.js' %}"></script>
+<script>
+(function () {
+    const elevador = document.getElementById('id_elevador');
+    const andarGroup = document.getElementById('andar-maximo-group');
+    const andarInput = document.getElementById('id_andar_maximo');
+
+    function atualizarAndarMaximo() {
+        const semElevador = elevador && elevador.value === 'sem';
+        if (andarGroup) andarGroup.style.display = semElevador ? '' : 'none';
+        if (andarInput && !semElevador) andarInput.value = '';
+    }
+
+    if (elevador) {
+        elevador.addEventListener('change', atualizarAndarMaximo);
+        atualizarAndarMaximo();
+    }
+
+    const btnTodosBairros = document.getElementById('btn-selecionar-todos-bairros');
+    if (btnTodosBairros) {
+        btnTodosBairros.addEventListener('click', () => {
+            document.querySelectorAll('#bairros-container input[type="checkbox"]').forEach((cb) => {
+                cb.checked = true;
+            });
+        });
+    }
+
+    const btnTodaInfra = document.getElementById('btn-selecionar-toda-infraestrutura');
+    if (btnTodaInfra) {
+        btnTodaInfra.addEventListener('click', () => {
+            document.querySelectorAll('#infraestrutura-container input[type="checkbox"]').forEach((cb) => {
+                cb.checked = true;
+            });
+        });
+    }
+})();
+</script>
 {% endblock %}

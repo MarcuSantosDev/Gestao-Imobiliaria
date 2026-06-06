@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load moeda_filters %}
+{% load moeda_filters demanda_filters %}
 
 {% block title %}Busca Inteligente - ImobiGest CRM{% endblock %}
 
@@ -15,28 +15,121 @@
 <div class="card shadow-sm mb-4">
     <div class="card-body">
         <h6>Filtros obrigatórios</h6>
+        <p class="text-muted small">Imóveis fora destes critérios são excluídos da busca.</p>
         <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge bg-danger">Finalidade: {{ demanda.get_finalidade_display }}</span>
             <span class="badge bg-danger">Cidade: {{ demanda.cidade }}</span>
-            {% if demanda.valor_minimo or demanda.valor_maximo %}
+            {% if demanda.bairros or demanda.bairro %}
+            <span class="badge bg-danger">Bairros: {{ demanda.bairros|default:demanda.bairro }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"tipo_imovel" %}
+            <span class="badge bg-danger">Tipo: {{ demanda.get_tipo_imovel_display }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"finalidade" %}
+            <span class="badge bg-danger">Finalidade: {{ demanda.get_finalidade_display }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"valor" and demanda.valor_minimo or demanda|filtro_obrigatorio:"valor" and demanda.valor_maximo %}
             <span class="badge bg-danger">
                 Valor:
                 {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
-                -
+                —
                 {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
             </span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"dormitorios" and demanda.dormitorios %}
+            <span class="badge bg-danger">Dormitórios: {{ demanda.dormitorios }}+</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"suites" and demanda.suites %}
+            <span class="badge bg-danger">Suítes: {{ demanda.suites }}+</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"banheiros" and demanda.banheiros %}
+            <span class="badge bg-danger">Banheiros: {{ demanda.banheiros }}+</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"area_minima" and demanda.area_minima %}
+            <span class="badge bg-danger">Área mín.: {{ demanda.area_minima }} m²</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"condominio_maximo" and demanda.condominio_maximo %}
+            <span class="badge bg-danger">Condomínio máx.: {{ demanda.condominio_maximo|moeda }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"elevador" and demanda.elevador != 'indiferente' %}
+            <span class="badge bg-danger">Elevador: {{ demanda.get_elevador_display }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"elevador" and demanda.elevador == 'sem' and demanda.andar_maximo %}
+            <span class="badge bg-danger">Até o {{ demanda.andar_maximo }}º andar</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"varanda" and demanda.varanda != 'indiferente' %}
+            <span class="badge bg-danger">Varanda: {{ demanda.get_varanda_display }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"vagas" and demanda.vagas %}
+            <span class="badge bg-danger">Vagas: {{ demanda.vagas }}+</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"vagas_cobertas" and demanda.vagas_cobertas %}
+            <span class="badge bg-danger">Vagas cobertas: {{ demanda.vagas_cobertas }}+</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"posicao_solar" and demanda.posicao_solar != 'indiferente' %}
+            <span class="badge bg-danger">Posição solar: {{ demanda.get_posicao_solar_display }}</span>
+            {% endif %}
+            {% if demanda|filtro_obrigatorio:"infraestrutura" %}
+            {% for item in demanda.infraestrutura.all %}
+            <span class="badge bg-danger">{{ item.nome }}</span>
+            {% endfor %}
             {% endif %}
         </div>
         <h6 class="text-muted">Critérios de compatibilidade</h6>
         <div class="d-flex flex-wrap gap-2">
+            {% if not demanda|filtro_obrigatorio:"tipo_imovel" %}
             <span class="badge bg-secondary">Tipo: {{ demanda.get_tipo_imovel_display }}</span>
-            {% if demanda.bairros or demanda.bairro %}
-            <span class="badge bg-secondary">Bairros: {{ demanda.bairros|default:demanda.bairro }}</span>
             {% endif %}
-            {% if demanda.dormitorios %}<span class="badge bg-secondary">Dormitórios: {{ demanda.dormitorios }}+</span>{% endif %}
-            {% if demanda.vagas %}<span class="badge bg-secondary">Vagas: {{ demanda.vagas }}+</span>{% endif %}
+            {% if not demanda|filtro_obrigatorio:"finalidade" %}
+            <span class="badge bg-secondary">Finalidade: {{ demanda.get_finalidade_display }}</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"valor" and demanda.valor_minimo or not demanda|filtro_obrigatorio:"valor" and demanda.valor_maximo %}
+            <span class="badge bg-secondary">
+                Valor:
+                {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
+                —
+                {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
+            </span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"dormitorios" and demanda.dormitorios %}
+            <span class="badge bg-secondary">Dormitórios: {{ demanda.dormitorios }}+</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"suites" and demanda.suites %}
+            <span class="badge bg-secondary">Suítes: {{ demanda.suites }}+</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"banheiros" and demanda.banheiros %}
+            <span class="badge bg-secondary">Banheiros: {{ demanda.banheiros }}+</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"area_minima" and demanda.area_minima %}
+            <span class="badge bg-secondary">Área mín.: {{ demanda.area_minima }} m²</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"condominio_maximo" and demanda.condominio_maximo %}
+            <span class="badge bg-secondary">Condomínio máx.: {{ demanda.condominio_maximo|moeda }}</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"elevador" and demanda.elevador != 'indiferente' %}
+            <span class="badge bg-secondary">Elevador: {{ demanda.get_elevador_display }}</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"elevador" and demanda.elevador == 'sem' and demanda.andar_maximo %}
+            <span class="badge bg-secondary">Até o {{ demanda.andar_maximo }}º andar</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"varanda" and demanda.varanda != 'indiferente' %}
+            <span class="badge bg-secondary">Varanda: {{ demanda.get_varanda_display }}</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"vagas" and demanda.vagas %}
+            <span class="badge bg-secondary">Vagas: {{ demanda.vagas }}+</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"vagas_cobertas" and demanda.vagas_cobertas %}
+            <span class="badge bg-secondary">Vagas cobertas: {{ demanda.vagas_cobertas }}+</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"posicao_solar" and demanda.posicao_solar != 'indiferente' %}
+            <span class="badge bg-secondary">Posição solar: {{ demanda.get_posicao_solar_display }}</span>
+            {% endif %}
+            {% if not demanda|filtro_obrigatorio:"infraestrutura" %}
+            {% for item in demanda.infraestrutura.all %}
+            <span class="badge bg-secondary">{{ item.nome }}</span>
+            {% endfor %}
+            {% endif %}
         </div>
-        <p class="text-muted small mb-0 mt-2">Somente imóveis fora da faixa de preço, finalidade ou cidade são excluídos. Os demais critérios influenciam a porcentagem de compatibilidade.</p>
+        <p class="text-muted small mb-0 mt-2">Cidade e bairros são sempre obrigatórios. Os demais critérios não marcados como obrigatórios influenciam a compatibilidade.</p>
     </div>
 </div>
 
@@ -70,7 +163,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr class="table-empty"><td colspan="6">Nenhum imóvel compatível encontrado. Verifique preço, finalidade e cidade.</td></tr>
+                <tr class="table-empty"><td colspan="6">Nenhum imóvel compatível encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -11,67 +11,201 @@
 
 <div class="card shadow-sm mb-3">
     <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label">Buscar</label>
-                <input type="text" name="q" class="form-control" placeholder="Título do imóvel..." value="{{ request.GET.q }}">
+        <form method="get" id="form-filtros-imoveis">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Buscar título</label>
+                    <input type="text" name="q" class="form-control" placeholder="Título do imóvel..." value="{{ request.GET.q }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Cidade</label>
+                    <select name="cidade" id="filtro_cidade" class="form-select">
+                        <option value="">Todas</option>
+                        {% for cidade in cidades %}
+                        <option value="{{ cidade }}" {% if request.GET.cidade == cidade %}selected{% endif %}>{{ cidade }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bairro</label>
+                    <select name="bairro" id="filtro_bairro" class="form-select">
+                        <option value="">Todos</option>
+                        {% for bairro in bairros_filtro %}
+                        <option value="{{ bairro }}" {% if request.GET.bairro == bairro %}selected{% endif %}>{{ bairro }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tipo</label>
+                    <select name="tipo" class="form-select">
+                        <option value="">Todos</option>
+                        {% for value, label in tipo_choices %}
+                        <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Finalidade</label>
+                    <select name="finalidade" class="form-select">
+                        <option value="">Todas</option>
+                        {% for value, label in finalidade_choices %}
+                        <option value="{{ value }}" {% if request.GET.finalidade == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Todos</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="col-md-2">
-                <label class="form-label">Cidade</label>
-                <select name="cidade" id="filtro_cidade" class="form-select">
-                    <option value="">Todas</option>
-                    {% for cidade in cidades %}
-                    <option value="{{ cidade }}" {% if request.GET.cidade == cidade %}selected{% endif %}>{{ cidade }}</option>
-                    {% endfor %}
-                </select>
+
+            <div class="row g-3 align-items-end mt-2">
+                <div class="col-md-2">
+                    <label class="form-label">Valor mín.</label>
+                    <input type="text" name="valor_min" class="form-control moeda-input" placeholder="0,00" value="{{ request.GET.valor_min|moeda_input }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Valor máx.</label>
+                    <input type="text" name="valor_max" class="form-control moeda-input" placeholder="0,00" value="{{ request.GET.valor_max|moeda_input }}">
+                </div>
+                <div class="col-md-8 d-flex gap-2 align-items-end">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalFiltrosAvancados">
+                        <i class="bi bi-sliders"></i> Filtros avançados
+                        {% if filtros_avancados_ativos %}<span class="badge bg-primary ms-1">{{ filtros_avancados_ativos }}</span>{% endif %}
+                    </button>
+                    <a href="{% url 'imoveis:list' %}" class="btn btn-outline-secondary">Limpar</a>
+                </div>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Bairro</label>
-                <select name="bairro" id="filtro_bairro" class="form-select">
-                    <option value="">Todos</option>
-                    {% for bairro in bairros_filtro %}
-                    <option value="{{ bairro }}" {% if request.GET.bairro == bairro %}selected{% endif %}>{{ bairro }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Tipo</label>
-                <select name="tipo" class="form-select">
-                    <option value="">Todos</option>
-                    {% for value, label in tipo_choices %}
-                    <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Finalidade</label>
-                <select name="finalidade" class="form-select">
-                    <option value="">Todas</option>
-                    {% for value, label in finalidade_choices %}
-                    <option value="{{ value }}" {% if request.GET.finalidade == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Status</label>
-                <select name="status" class="form-select">
-                    <option value="">Todos</option>
-                    {% for value, label in status_choices %}
-                    <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Valor mín.</label>
-                <input type="text" name="valor_min" class="form-control moeda-input" placeholder="0,00" value="{{ request.GET.valor_min|moeda_input }}">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Valor máx.</label>
-                <input type="text" name="valor_max" class="form-control moeda-input" placeholder="0,00" value="{{ request.GET.valor_max|moeda_input }}">
-            </div>
-            <div class="col-md-4 d-flex gap-2">
-                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
-                <a href="{% url 'imoveis:list' %}" class="btn btn-outline-secondary">Limpar</a>
+
+            <div class="modal fade" id="modalFiltrosAvancados" tabindex="-1" aria-labelledby="modalFiltrosAvancadosLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalFiltrosAvancadosLabel">Filtros avançados</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <h6 class="text-muted mb-3">Localização</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Endereço</label>
+                                    <input type="text" name="endereco" class="form-control" placeholder="Endereço..." value="{{ request.GET.endereco }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Corretor</label>
+                                    <select name="corretor" class="form-select">
+                                        <option value="">Todos</option>
+                                        {% for corretor in corretores %}
+                                        <option value="{{ corretor.pk }}" {% if request.GET.corretor == corretor.pk|stringformat:"s" %}selected{% endif %}>{{ corretor.nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <h6 class="text-muted mb-3">Valores e área</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Condomínio mín.</label>
+                                    <input type="text" name="condominio_min" class="form-control moeda-input" placeholder="0,00" value="{{ request.GET.condominio_min|moeda_input }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Condomínio máx.</label>
+                                    <input type="text" name="condominio_max" class="form-control moeda-input" placeholder="0,00" value="{{ request.GET.condominio_max|moeda_input }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Área mín. (m²)</label>
+                                    <input type="number" name="area_min" class="form-control" step="0.01" min="0" value="{{ request.GET.area_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Área máx. (m²)</label>
+                                    <input type="number" name="area_max" class="form-control" step="0.01" min="0" value="{{ request.GET.area_max }}">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Posição solar</label>
+                                    <select name="posicao_solar" class="form-select">
+                                        <option value="">Todas</option>
+                                        {% for value, label in posicao_solar_choices %}
+                                        <option value="{{ value }}" {% if request.GET.posicao_solar == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <h6 class="text-muted mb-3">Cômodos, vagas e prédio</h6>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Dormitórios mín.</label>
+                                    <input type="number" name="dormitorios_min" class="form-control" min="0" value="{{ request.GET.dormitorios_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Suítes mín.</label>
+                                    <input type="number" name="suites_min" class="form-control" min="0" value="{{ request.GET.suites_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Banheiros mín.</label>
+                                    <input type="number" name="banheiros_min" class="form-control" min="0" value="{{ request.GET.banheiros_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Vagas mín.</label>
+                                    <input type="number" name="vagas_min" class="form-control" min="0" value="{{ request.GET.vagas_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Vagas cobertas mín.</label>
+                                    <input type="number" name="vagas_cobertas_min" class="form-control" min="0" value="{{ request.GET.vagas_cobertas_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Andares prédio mín.</label>
+                                    <input type="number" name="total_andares_min" class="form-control" min="0" value="{{ request.GET.total_andares_min }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Andar do imóvel</label>
+                                    <input type="number" name="andar" class="form-control" min="0" value="{{ request.GET.andar }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Elevador</label>
+                                    <select name="elevador" class="form-select">
+                                        <option value="">Todos</option>
+                                        {% for value, label in sim_nao_choices %}
+                                        <option value="{{ value }}" {% if request.GET.elevador == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Varanda</label>
+                                    <select name="varanda" class="form-select">
+                                        <option value="">Todos</option>
+                                        {% for value, label in sim_nao_choices %}
+                                        <option value="{{ value }}" {% if request.GET.varanda == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <h6 class="text-muted mb-3">Infraestrutura</h6>
+                            <div class="row g-2">
+                                {% for infra in infraestruturas %}
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="infraestrutura" value="{{ infra.pk }}" id="infra_{{ infra.pk }}"
+                                            {% if infra.pk|stringformat:"s" in infraestrutura_selecionada %}checked{% endif %}>
+                                        <label class="form-check-label" for="infra_{{ infra.pk }}">{{ infra.nome }}</label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Aplicar filtros</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>

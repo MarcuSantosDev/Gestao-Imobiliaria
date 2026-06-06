@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
 from apps.imoveis.fields import parse_moeda_br
@@ -5,7 +7,7 @@ from apps.imoveis.fields import parse_moeda_br
 from apps.imoveis.localidades import BAIRROS, CIDADES, bairros_da_cidade
 from .forms import ImovelForm
 from .mixins import LocalidadesFormMixin
-from .models import FotoImovel, Imovel
+from .models import Corretor, FotoImovel, Imovel, Infraestrutura
 from .sharing import gerar_texto_compartilhamento
 
 import io
@@ -19,6 +21,24 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 
 
+def _parse_int(value):
+    if value in (None, ''):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_decimal(value):
+    if value in (None, ''):
+        return None
+    try:
+        return Decimal(str(value).replace(',', '.'))
+    except (InvalidOperation, ValueError):
+        return None
+
+
 class ImovelListView(ListView):
     model = Imovel
     template_name = 'imoveis/list.html'
@@ -26,7 +46,7 @@ class ImovelListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        qs = Imovel.objects.select_related('corretor').prefetch_related('fotos')
+        qs = Imovel.objects.select_related('corretor').prefetch_related('fotos', 'infraestrutura')
         params = self.request.GET
 
         if q := params.get('q', '').strip():
@@ -35,22 +55,57 @@ class ImovelListView(ListView):
             qs = qs.filter(cidade=cidade)
         if bairro := params.get('bairro', '').strip():
             qs = qs.filter(bairro=bairro)
+        if endereco := params.get('endereco', '').strip():
+            qs = qs.filter(endereco__icontains=endereco)
         if finalidade := params.get('finalidade', '').strip():
             qs = qs.filter(finalidade=finalidade)
         if status := params.get('status', '').strip():
             qs = qs.filter(status=status)
         if tipo := params.get('tipo', '').strip():
             qs = qs.filter(tipo=tipo)
-        if valor_min := params.get('valor_min', '').strip():
-            parsed = parse_moeda_br(valor_min)
-            if parsed is not None:
-                qs = qs.filter(valor__gte=parsed)
-        if valor_max := params.get('valor_max', '').strip():
-            parsed = parse_moeda_br(valor_max)
-            if parsed is not None:
-                qs = qs.filter(valor__lte=parsed)
+        if corretor := params.get('corretor', '').strip():
+            qs = qs.filter(corretor_id=corretor)
+        if posicao := params.get('posicao_solar', '').strip():
+            qs = qs.filter(posicao_solar=posicao)
 
-        return qs.order_by('-id')
+        for campo, filtro in (
+            ('valor_min', 'valor__gte'),
+            ('valor_max', 'valor__lte'),
+            ('condominio_min', 'valor_condominio__gte'),
+            ('condominio_max', 'valor_condominio__lte'),
+        ):
+            if raw := params.get(campo, '').strip():
+                parsed = parse_moeda_br(raw)
+                if parsed is not None:
+                    qs = qs.filter(**{filtro: parsed})
+
+        if area_min := _parse_decimal(params.get('area_min')):
+            qs = qs.filter(area_total__gte=area_min)
+        if area_max := _parse_decimal(params.get('area_max')):
+            qs = qs.filter(area_total__lte=area_max)
+
+        for campo, filtro in (
+            ('dormitorios_min', 'dormitorios__gte'),
+            ('suites_min', 'suites__gte'),
+            ('banheiros_min', 'banheiros__gte'),
+            ('vagas_min', 'vagas__gte'),
+            ('vagas_cobertas_min', 'vagas_cobertas__gte'),
+            ('total_andares_min', 'total_andares__gte'),
+            ('andar', 'andar'),
+        ):
+            if valor := _parse_int(params.get(campo)):
+                qs = qs.filter(**{filtro: valor})
+
+        if elevador := params.get('elevador', '').strip():
+            qs = qs.filter(elevador=(elevador == 'sim'))
+        if varanda := params.get('varanda', '').strip():
+            qs = qs.filter(varanda=(varanda == 'sim'))
+
+        infra_ids = [i for i in (_parse_int(v) for v in params.getlist('infraestrutura')) if i]
+        for infra_id in infra_ids:
+            qs = qs.filter(infraestrutura__id=infra_id)
+
+        return qs.distinct().order_by('-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -61,6 +116,23 @@ class ImovelListView(ListView):
         context['bairros_filtro'] = bairros_da_cidade(cidade) if cidade else []
         context['finalidade_choices'] = Imovel.FINALIDADE_CHOICES
         context['status_choices'] = Imovel.STATUS_CHOICES
+        context['posicao_solar_choices'] = Imovel.POSICAO_SOLAR_CHOICES
+        context['corretores'] = Corretor.objects.order_by('nome')
+        context['infraestruturas'] = Infraestrutura.objects.order_by('nome')
+        context['sim_nao_choices'] = (('sim', 'Sim'), ('nao', 'Não'))
+        context['infraestrutura_selecionada'] = self.request.GET.getlist('infraestrutura')
+        params = self.request.GET
+        avancados = 0
+        for campo in (
+            'endereco', 'corretor', 'condominio_min', 'condominio_max',
+            'area_min', 'area_max', 'posicao_solar', 'dormitorios_min',
+            'suites_min', 'banheiros_min', 'vagas_min', 'vagas_cobertas_min',
+            'total_andares_min', 'andar', 'elevador', 'varanda',
+        ):
+            if params.get(campo, '').strip():
+                avancados += 1
+        avancados += len(params.getlist('infraestrutura'))
+        context['filtros_avancados_ativos'] = avancados
         return context
 
 

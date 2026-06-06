@@ -91,7 +91,8 @@ class Imovel(models.Model):
     area_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     area_construida = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
 
-    andar = models.IntegerField(blank=True, null=True)
+    total_andares = models.IntegerField(blank=True, null=True, verbose_name='Total de andares do prédio')
+    andar = models.IntegerField(blank=True, null=True, verbose_name='Andar do imóvel')
     elevador = models.BooleanField(default=False)
     varanda = models.BooleanField(default=False)
 
@@ -126,6 +127,35 @@ class FotoImovel(models.Model):
     def __str__(self):
         return f"Foto de {self.imovel.titulo}"
     
+FILTROS_OBRIGATORIOS_FIXOS = ('cidade', 'bairros')
+
+DEFAULT_FILTROS_OBRIGATORIOS = list(FILTROS_OBRIGATORIOS_FIXOS)
+
+FILTRO_DEMANDA_CHOICES = [
+    ('tipo_imovel', 'Tipo de imóvel'),
+    ('finalidade', 'Finalidade'),
+    ('cidade', 'Cidade'),
+    ('valor', 'Faixa de valor'),
+    ('dormitorios', 'Dormitórios'),
+    ('suites', 'Suítes'),
+    ('banheiros', 'Banheiros'),
+    ('area_minima', 'Área mínima'),
+    ('condominio_maximo', 'Condomínio máximo'),
+    ('elevador', 'Elevador'),
+    ('varanda', 'Varanda'),
+    ('vagas', 'Vagas'),
+    ('vagas_cobertas', 'Vagas cobertas'),
+    ('bairros', 'Bairros'),
+    ('posicao_solar', 'Posição solar'),
+    ('infraestrutura', 'Infraestrutura'),
+]
+
+FILTRO_DEMANDA_OPCOES = [
+    (chave, label) for chave, label in FILTRO_DEMANDA_CHOICES
+    if chave not in FILTROS_OBRIGATORIOS_FIXOS
+]
+
+
 class DemandaCliente(models.Model):
 
     TIPO_CHOICES = [
@@ -160,7 +190,30 @@ class DemandaCliente(models.Model):
     bairros = models.CharField(max_length=500, blank=True, null=True, help_text='Bairros separados por vírgula')
 
     dormitorios = models.IntegerField(null=True, blank=True)
+    suites = models.IntegerField(null=True, blank=True, verbose_name='Suítes mínimas')
+    banheiros = models.IntegerField(null=True, blank=True, verbose_name='Banheiros mínimos')
+    area_minima = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    ELEVADOR_CHOICES = [
+        ('indiferente', 'Indiferente'),
+        ('com', 'Com elevador'),
+        ('sem', 'Sem elevador'),
+    ]
+    elevador = models.CharField(max_length=15, choices=ELEVADOR_CHOICES, default='indiferente')
+    andar_maximo = models.IntegerField(null=True, blank=True, verbose_name='Andar máximo (sem elevador)')
+
+    VARANDA_CHOICES = [
+        ('indiferente', 'Indiferente'),
+        ('sim', 'Com varanda'),
+        ('nao', 'Sem varanda'),
+    ]
+    varanda = models.CharField(max_length=15, choices=VARANDA_CHOICES, default='indiferente')
+
+    condominio_maximo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+
     vagas = models.IntegerField(null=True, blank=True)
+    vagas_cobertas = models.IntegerField(null=True, blank=True, verbose_name='Vagas cobertas mínimas')
+
     posicao_solar = models.CharField(
         max_length=15,
         choices=[
@@ -174,6 +227,12 @@ class DemandaCliente(models.Model):
 
     infraestrutura = models.ManyToManyField('Infraestrutura', blank=True)
 
+    filtros_obrigatorios = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text='Critérios obrigatórios na busca inteligente, separados por vírgula',
+    )
+
     criado_em = models.DateTimeField(auto_now_add=True)
     atendida_em = models.DateTimeField(null=True, blank=True)
 
@@ -186,3 +245,37 @@ class DemandaCliente(models.Model):
         if self.bairro:
             return [self.bairro]
         return []
+
+    def get_filtros_opcionais_obrigatorios_lista(self):
+        if not self.filtros_obrigatorios:
+            return []
+        fixos = set(FILTROS_OBRIGATORIOS_FIXOS)
+        return [
+            f.strip() for f in self.filtros_obrigatorios.split(',')
+            if f.strip() and f.strip() not in fixos
+        ]
+
+    def get_filtros_obrigatorios_lista(self):
+        return list(FILTROS_OBRIGATORIOS_FIXOS) + self.get_filtros_opcionais_obrigatorios_lista()
+
+    def filtro_e_obrigatorio(self, chave):
+        if chave in FILTROS_OBRIGATORIOS_FIXOS:
+            return True
+        return chave in self.get_filtros_opcionais_obrigatorios_lista()
+
+    def get_filtros_compatibilidade_lista(self):
+        opcionais_obrigatorios = set(self.get_filtros_opcionais_obrigatorios_lista())
+        return [
+            chave for chave, _ in FILTRO_DEMANDA_OPCOES
+            if chave not in opcionais_obrigatorios
+        ]
+
+    def _labels_filtros(self, chaves):
+        labels = dict(FILTRO_DEMANDA_CHOICES)
+        return [labels[chave] for chave in chaves if chave in labels]
+
+    def get_filtros_obrigatorios_labels(self):
+        return self._labels_filtros(self.get_filtros_obrigatorios_lista())
+
+    def get_filtros_compatibilidade_labels(self):
+        return self._labels_filtros(self.get_filtros_compatibilidade_lista())

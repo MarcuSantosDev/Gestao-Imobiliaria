@@ -15,14 +15,42 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <h5 class="mb-3">Dados do imóvel</h5>
+            <h5 class="mb-3">Dados gerais</h5>
             <div class="row">
                 {% for field in form %}
-                {% if field.name != 'infraestrutura' %}
+                {% if field.name in 'titulo tipo finalidade cidade bairro endereco valor valor_condominio descricao' %}
                 <div class="col-md-6 mb-3 {% if field.name == 'descricao' %}col-12{% endif %}">
                     <label class="form-label" for="{{ field.id_for_label }}">
                         {{ field.label }}{% if field.field.required %} *{% endif %}
                     </label>
+                    {{ field }}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <hr class="my-4">
+            <h5 class="mb-3">Área, cômodos e vagas</h5>
+            <div class="row">
+                {% for field in form %}
+                {% if field.name in 'area_total dormitorios suites banheiros vagas vagas_cobertas' %}
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <hr class="my-4">
+            <h5 class="mb-3">Prédio e posição</h5>
+            <div class="row">
+                {% for field in form %}
+                {% if field.name in 'total_andares andar posicao_solar corretor' %}
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                     {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
                 </div>
@@ -71,10 +99,19 @@
             <hr class="my-4">
 
             <h5 class="mb-3">Infraestrutura</h5>
+            <p class="text-muted small">Marque <strong>Elevador</strong> e <strong>Varanda</strong> aqui quando o imóvel possuir.</p>
             <div class="row mb-4">
                 {% for checkbox in form.infraestrutura %}
                 <div class="col-md-4 col-sm-6">{{ checkbox }}</div>
                 {% endfor %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label" for="{{ form.status.id_for_label }}">{{ form.status.label }} *</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                </div>
             </div>
 
             <div class="d-flex gap-2">

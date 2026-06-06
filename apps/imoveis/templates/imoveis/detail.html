@@ -65,6 +65,7 @@
             <div class="card-body">
                 <h5>Informações</h5>
                 <p><strong>Valor:</strong> {{ imovel.valor|moeda }}</p>
+                {% if imovel.valor_condominio %}<p><strong>Condomínio:</strong> {{ imovel.valor_condominio|moeda }}</p>{% endif %}
                 <p><strong>Cidade:</strong> {{ imovel.cidade }}</p>
                 <p><strong>Bairro:</strong> {{ imovel.bairro }}</p>
                 {% if imovel.endereco %}<p><strong>Endereço:</strong> {{ imovel.endereco }}</p>{% endif %}
@@ -79,10 +80,15 @@
             <div class="card-body">
                 <h5>Características</h5>
                 <ul class="list-unstyled mb-0">
+                    {% if imovel.area_total %}<li>Área: {{ imovel.area_total }} m²</li>{% endif %}
                     <li>Dormitórios: {{ imovel.dormitorios }}</li>
                     <li>Suítes: {{ imovel.suites }}</li>
                     <li>Banheiros: {{ imovel.banheiros }}</li>
-                    <li>Vagas: {{ imovel.vagas }}</li>
+                    <li>Vagas: {{ imovel.vagas }}{% if imovel.vagas_cobertas %} ({{ imovel.vagas_cobertas }} coberta{{ imovel.vagas_cobertas|pluralize:"s" }}){% endif %}</li>
+                    {% if imovel.total_andares %}<li>Total de andares: {{ imovel.total_andares }}</li>{% endif %}
+                    {% if imovel.andar is not None %}<li>Andar: {{ imovel.andar }}º</li>{% endif %}
+                    <li>Elevador: {% if imovel.elevador %}Sim{% else %}Não{% endif %}</li>
+                    <li>Varanda: {% if imovel.varanda %}Sim{% else %}Não{% endif %}</li>
                     {% if imovel.posicao_solar %}<li>Posição solar: {{ imovel.get_posicao_solar_display }}</li>{% endif %}
                 </ul>
             </div>
