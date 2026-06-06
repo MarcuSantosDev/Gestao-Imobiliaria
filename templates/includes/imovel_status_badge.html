@@ -1,0 +1,11 @@
+{% if imovel.status == 'disponivel' %}
+<span class="badge bg-success">{{ imovel.get_status_display }}</span>
+{% elif imovel.status == 'reservado' %}
+<span class="badge bg-warning text-dark">{{ imovel.get_status_display }}</span>
+{% elif imovel.status == 'vendido' %}
+<span class="badge bg-primary">{{ imovel.get_status_display }}</span>
+{% elif imovel.status == 'alugado' %}
+<span class="badge bg-info text-dark">{{ imovel.get_status_display }}</span>
+{% else %}
+<span class="badge bg-secondary">{{ imovel.get_status_display }}</span>
+{% endif %}

@@ -115,7 +115,7 @@
                         <a href="{% url 'corretores:update' imovel.corretor.pk %}">{{ imovel.corretor.nome }}</a>
                         {% else %}—{% endif %}
                     </td>
-                    <td><span class="badge bg-secondary">{{ imovel.get_status_display }}</span></td>
+                    <td>{% include 'includes/imovel_status_badge.html' %}</td>
                     <td class="table-actions text-end">
                         <a href="{% url 'imoveis:detail' imovel.pk %}" class="btn btn-sm btn-outline-info">Ver</a>
                         <a href="{% url 'imoveis:update' imovel.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
