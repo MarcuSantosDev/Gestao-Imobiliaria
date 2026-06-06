@@ -14,12 +14,12 @@
 
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-striped mb-0">
+        <table class="table table-app mb-0">
             <thead>
                 <tr>
                     <th>Cliente</th>
-                    <th>
-                        <a href="?{% querystring ordem=ordem_proxima page=1 %}" class="text-decoration-none text-body d-inline-flex align-items-center gap-1 no-print">
+                    <th class="col-date">
+                        <a href="?{% querystring ordem=ordem_proxima page=1 %}" class="d-inline-flex align-items-center gap-1 no-print">
                             Finalizada em
                             {% if ordem == 'recente' %}
                             <i class="bi bi-sort-down" title="Mais recentes primeiro — clique para mais antigos"></i>
@@ -31,25 +31,25 @@
                     </th>
                     <th>Tipo</th>
                     <th>Cidade</th>
-                    <th>Faixa de valor</th>
-                    <th class="text-end no-print">Ações</th>
+                    <th class="col-num">Faixa de valor</th>
+                    <th class="table-actions no-print">Ações</th>
                 </tr>
             </thead>
             <tbody>
                 {% for demanda in demandas %}
                 <tr>
                     <td>{{ demanda.cliente.nome }}</td>
-                    <td>{{ demanda.atendida_em|date:"d/m/Y H:i" }}</td>
+                    <td class="col-date">{{ demanda.atendida_em|date:"d/m/Y H:i" }}</td>
                     <td>{{ demanda.get_tipo_imovel_display }}</td>
                     <td>{{ demanda.cidade|default:"—" }}</td>
-                    <td>
+                    <td class="col-num">
                         {% if demanda.valor_minimo or demanda.valor_maximo %}
                             {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
                             —
                             {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
                         {% else %}—{% endif %}
                     </td>
-                    <td class="text-end no-print">
+                    <td class="table-actions no-print">
                         <form method="post" action="{% url 'historico:demandas_reabrir' demanda.pk %}" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-warning">Reabrir demanda</button>
@@ -57,7 +57,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" class="text-muted">Nenhuma demanda finalizada.</td></tr>
+                <tr class="table-empty"><td colspan="6">Nenhuma demanda finalizada.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

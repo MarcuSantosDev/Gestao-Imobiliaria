@@ -42,15 +42,15 @@
 
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-app mb-0">
             <thead>
                 <tr>
                     <th>Imóvel</th>
                     <th>Cidade</th>
                     <th>Bairro</th>
-                    <th>Valor</th>
+                    <th class="col-num">Valor</th>
                     <th>Compatibilidade</th>
-                    <th></th>
+                    <th class="table-actions">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,18 +59,18 @@
                     <td>{{ resultado.imovel.titulo }}</td>
                     <td>{{ resultado.imovel.cidade }}</td>
                     <td>{{ resultado.imovel.bairro }}</td>
-                    <td>{{ resultado.imovel.valor|moeda }}</td>
+                    <td class="col-num">{{ resultado.imovel.valor|moeda }}</td>
                     <td>
                         <div class="progress" style="height: 22px;">
                             <div class="progress-bar" style="width: {{ resultado.compatibilidade }}%">{{ resultado.compatibilidade }}%</div>
                         </div>
                     </td>
-                    <td class="text-end">
+                    <td class="table-actions">
                         <a href="{% url 'imoveis:detail' resultado.imovel.pk %}" class="btn btn-sm btn-outline-info">Ver detalhes</a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="6" class="text-muted">Nenhum imóvel compatível encontrado. Verifique preço, finalidade e cidade.</td></tr>
+                <tr class="table-empty"><td colspan="6">Nenhum imóvel compatível encontrado. Verifique preço, finalidade e cidade.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -34,13 +34,13 @@
 
 <div class="card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-app mb-0">
             <thead>
                 <tr>
                     <th>Nome</th>
                     <th>Telefone</th>
                     <th>Tipo</th>
-                    <th></th>
+                    <th class="table-actions">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,13 +49,13 @@
                     <td>{{ corretor.nome }}</td>
                     <td>{{ corretor.telefone }}</td>
                     <td>{{ corretor.get_tipo_display }}</td>
-                    <td class="table-actions text-end">
+                    <td class="table-actions">
                         <a href="{% url 'corretores:update' corretor.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                         <a href="{% url 'corretores:delete' corretor.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="text-muted">Nenhum corretor encontrado.</td></tr>
+                <tr class="table-empty"><td colspan="4">Nenhum corretor encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

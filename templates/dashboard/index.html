@@ -74,14 +74,14 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white"><strong>Últimos Imóveis Cadastrados</strong></div>
             <div class="table-responsive">
-                <table class="table table-sm mb-0">
+                <table class="table table-app table-app-compact mb-0">
                     <thead>
                         <tr>
                             <th>Imóvel</th>
                             <th>Cidade</th>
                             <th>Bairro</th>
-                            <th>Valor</th>
-                            <th>Status</th>
+                            <th class="col-num">Valor</th>
+                            <th class="col-status">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,11 +90,11 @@
                             <td><a href="{% url 'imoveis:detail' imovel.pk %}">{{ imovel.titulo }}</a></td>
                             <td>{{ imovel.cidade }}</td>
                             <td>{{ imovel.bairro }}</td>
-                            <td>{{ imovel.valor|moeda }}</td>
-                            <td>{{ imovel.get_status_display }}</td>
+                            <td class="col-num">{{ imovel.valor|moeda }}</td>
+                            <td class="col-status">{% include 'includes/imovel_status_badge.html' %}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="5" class="text-muted">Nenhum imóvel cadastrado.</td></tr>
+                        <tr class="table-empty"><td colspan="5">Nenhum imóvel cadastrado.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -105,7 +105,7 @@
         <div class="card shadow-sm">
             <div class="card-header bg-white"><strong>Últimas Demandas em Aberto</strong></div>
             <div class="table-responsive">
-                <table class="table table-sm mb-0">
+                <table class="table table-app table-app-compact mb-0">
                     <thead>
                         <tr>
                             <th>Cliente</th>
@@ -123,7 +123,7 @@
                             <td>{{ demanda.bairros|default:demanda.bairro|default:"—" }}</td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-muted">Nenhuma demanda cadastrada.</td></tr>
+                        <tr class="table-empty"><td colspan="4">Nenhuma demanda cadastrada.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
