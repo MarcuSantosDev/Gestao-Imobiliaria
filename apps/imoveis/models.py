@@ -150,7 +150,17 @@ class FotoImovel(models.Model):
         if self.imagem and self._tamanho_arquivo(self.imagem) > 0:
             return self.imagem
         return None
-    
+
+    def excluir_arquivos_midia(self):
+        for campo in ('imagem', 'imagem_original'):
+            arquivo = getattr(self, campo, None)
+            if arquivo and arquivo.name:
+                arquivo.delete(save=False)
+
+    def delete(self, *args, **kwargs):
+        self.excluir_arquivos_midia()
+        super().delete(*args, **kwargs)
+
 FILTROS_OBRIGATORIOS_FIXOS = ('cidade', 'bairros')
 
 DEFAULT_FILTROS_OBRIGATORIOS = list(FILTROS_OBRIGATORIOS_FIXOS)

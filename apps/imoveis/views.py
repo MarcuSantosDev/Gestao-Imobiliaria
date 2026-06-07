@@ -264,10 +264,6 @@ class FotoImovelDeleteView(View):
     def post(self, request, foto_pk):
         foto = get_object_or_404(FotoImovel, pk=foto_pk)
         imovel_id = foto.imovel_id
-        if foto.imagem:
-            foto.imagem.delete(save=False)
-        if foto.imagem_original:
-            foto.imagem_original.delete(save=False)
         foto.delete()
         total = FotoImovel.objects.filter(imovel_id=imovel_id).count()
         return JsonResponse({'ok': True, 'total_fotos': total})
