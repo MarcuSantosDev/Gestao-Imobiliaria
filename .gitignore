@@ -22,8 +22,6 @@ venv.bak/
 db.sqlite3
 media/
 staticfiles/
-static/
-
 # Local settings
 local_settings.py
 

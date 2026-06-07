@@ -1,0 +1,170 @@
+/* Tabelas padronizadas do CRM */
+:root,
+[data-bs-theme="light"] {
+    --app-table-hover: rgba(13, 110, 253, 0.05);
+    --app-table-head-bg: #f1f4f8;
+    --app-table-head-border: #dee2e6;
+    --app-table-head-color: #495057;
+    --app-table-row-border: #edf0f3;
+    --app-table-cell-color: #212529;
+    --app-table-empty-color: #6c757d;
+    --app-table-thumb-bg: #f8f9fa;
+    --app-table-thumb-color: #6c757d;
+    --app-table-sort-hover: #0d6efd;
+}
+
+[data-bs-theme="dark"] {
+    --app-table-hover: rgba(110, 168, 254, 0.08);
+    --app-table-head-bg: #1c2128;
+    --app-table-head-border: #373b3e;
+    --app-table-head-color: #adb5bd;
+    --app-table-row-border: #2d3238;
+    --app-table-cell-color: #e9ecef;
+    --app-table-empty-color: #868e96;
+    --app-table-thumb-bg: #2b3035;
+    --app-table-thumb-color: #adb5bd;
+    --app-table-sort-hover: #6ea8fe;
+}
+
+.card .table-responsive {
+    border-radius: 0 0 0.375rem 0.375rem;
+}
+
+.card .table-app {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.card .table-app thead th {
+    background-color: var(--app-table-head-bg);
+    border-bottom: 2px solid var(--app-table-head-border);
+    color: var(--app-table-head-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 0.85rem 1rem;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.card .table-app thead th a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.card .table-app thead th a:hover {
+    color: var(--app-table-sort-hover);
+}
+
+.card .table-app tbody td {
+    border-bottom: 1px solid var(--app-table-row-border);
+    color: var(--app-table-cell-color);
+    font-size: 0.9375rem;
+    padding: 0.85rem 1rem;
+    vertical-align: middle;
+}
+
+.card .table-app tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.card .table-app tbody tr:hover {
+    background-color: var(--app-table-hover);
+}
+
+.card .table-app tbody tr.table-empty td {
+    border-bottom: none;
+    color: var(--app-table-empty-color) !important;
+    padding: 2.5rem 1rem;
+    text-align: center;
+}
+
+.card .table-app .col-num,
+.card .table-app th.col-num,
+.card .table-app td.col-num {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.card .table-app .col-date {
+    white-space: nowrap;
+}
+
+.card .table-app .col-status {
+    white-space: nowrap;
+    width: 1%;
+}
+
+.card .table-app th.table-actions,
+.card .table-app td.table-actions {
+    text-align: center;
+    white-space: nowrap;
+    width: 1%;
+}
+
+.card .table-app td.table-actions {
+    vertical-align: middle;
+}
+
+.card .table-app td.table-actions .btn,
+.card .table-app td.table-actions form {
+    display: inline-block;
+    margin: 0 0.125rem;
+    vertical-align: middle;
+}
+
+.card .table-app-compact thead th,
+.card .table-app-compact tbody td {
+    font-size: 0.875rem;
+    padding: 0.65rem 0.85rem;
+}
+
+.card .table-app-compact thead th {
+    font-size: 0.7rem;
+}
+
+.card .table-app .col-thumb {
+    width: 80px;
+}
+
+.card .table-app .thumb-preview {
+    align-items: center;
+    background-color: var(--app-table-thumb-bg);
+    border-radius: 0.375rem;
+    color: var(--app-table-thumb-color);
+    display: flex;
+    font-size: 0.7rem;
+    height: 48px;
+    justify-content: center;
+    width: 64px;
+}
+
+.card .table-app .thumb-preview img {
+    border-radius: 0.375rem;
+    height: 48px;
+    object-fit: cover;
+    width: 64px;
+}
+
+.card-header + .table-responsive .table-app thead th {
+    border-top: none;
+}
+
+@media (max-width: 767.98px) {
+    .card .table-app thead th,
+    .card .table-app tbody td {
+        font-size: 0.8125rem;
+        padding: 0.65rem 0.75rem;
+    }
+}
+
+@media print {
+    .card .table-app thead th {
+        background-color: #f1f4f8 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
