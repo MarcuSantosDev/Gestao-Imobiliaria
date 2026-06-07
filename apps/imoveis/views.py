@@ -14,11 +14,31 @@ import io
 import os
 import zipfile
 
+from django.core.files.base import ContentFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
+
+
+def salvar_fotos_imovel(imovel, files):
+    fotos = files.getlist('fotos')
+    originais = files.getlist('fotos_originais')
+    for indice, foto in enumerate(fotos):
+        foto_obj = FotoImovel.objects.create(imovel=imovel, imagem=foto)
+        original = originais[indice] if indice < len(originais) else None
+        if original:
+            foto_obj.imagem_original.save(original.name, original, save=True)
+
+
+def preservar_original_foto(foto):
+    if foto.imagem_original or not foto.imagem:
+        return
+    with foto.imagem.open('rb') as arquivo:
+        conteudo = arquivo.read()
+    nome = os.path.basename(foto.imagem.name)
+    foto.imagem_original.save(nome, ContentFile(conteudo), save=True)
 
 
 def _parse_int(value):
@@ -159,8 +179,7 @@ class ImovelCreateView(LocalidadesFormMixin, CreateView):
         return response
 
     def _salvar_fotos(self, imovel):
-        for foto in self.request.FILES.getlist('fotos'):
-            FotoImovel.objects.create(imovel=imovel, imagem=foto)
+        salvar_fotos_imovel(imovel, self.request.FILES)
 
 
 class ImovelUpdateView(LocalidadesFormMixin, UpdateView):
@@ -181,8 +200,7 @@ class ImovelUpdateView(LocalidadesFormMixin, UpdateView):
         return response
 
     def _salvar_fotos(self, imovel):
-        for foto in self.request.FILES.getlist('fotos'):
-            FotoImovel.objects.create(imovel=imovel, imagem=foto)
+        salvar_fotos_imovel(imovel, self.request.FILES)
 
 
 class ImovelDeleteView(DeleteView):
@@ -221,6 +239,29 @@ class FotoImovelDeleteView(View):
         imovel_id = foto.imovel_id
         if foto.imagem:
             foto.imagem.delete(save=False)
+        if foto.imagem_original:
+            foto.imagem_original.delete(save=False)
         foto.delete()
         total = FotoImovel.objects.filter(imovel_id=imovel_id).count()
         return JsonResponse({'ok': True, 'total_fotos': total})
+
+
+@method_decorator(require_POST, name='dispatch')
+class FotoImovelCropView(View):
+    def post(self, request, foto_pk):
+        foto = get_object_or_404(FotoImovel, pk=foto_pk)
+        imagem = request.FILES.get('imagem')
+        if not imagem or not imagem.content_type.startswith('image/'):
+            return JsonResponse({'ok': False, 'error': 'Arquivo inválido'}, status=400)
+        preservar_original_foto(foto)
+        if foto.imagem:
+            foto.imagem.delete(save=False)
+        foto.imagem = imagem
+        foto.save()
+        url = foto.imagem.url
+        separador = '&' if '?' in url else '?'
+        return JsonResponse({
+            'ok': True,
+            'url': f'{url}{separador}t={foto.pk}',
+            'original_url': foto.url_para_recorte(),
+        })

@@ -123,9 +123,20 @@ class Imovel(models.Model):
 class FotoImovel(models.Model):
     imovel = models.ForeignKey('Imovel', on_delete=models.CASCADE, related_name='fotos')
     imagem = models.ImageField(upload_to='imoveis/')
+    imagem_original = models.ImageField(
+        upload_to='imoveis/originais/',
+        blank=True,
+        null=True,
+        help_text='Arquivo original para recorte posterior sem perda de área',
+    )
 
     def __str__(self):
         return f"Foto de {self.imovel.titulo}"
+
+    def url_para_recorte(self):
+        if self.imagem_original:
+            return self.imagem_original.url
+        return self.imagem.url
     
 FILTROS_OBRIGATORIOS_FIXOS = ('cidade', 'bairros')
 

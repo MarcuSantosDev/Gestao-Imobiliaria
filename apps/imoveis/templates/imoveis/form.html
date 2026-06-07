@@ -4,6 +4,7 @@
 {% block title %}{% if object %}Editar{% else %}Novo{% endif %} Imóvel - ImobiGest CRM{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 <link rel="stylesheet" href="{% static 'css/fotos.css' %}">
 {% endblock %}
 
@@ -74,6 +75,7 @@
                     {% for foto in fotos_existentes %}
                     <div class="col-6 col-md-3 col-lg-2" data-foto-card>
                         <div class="foto-card border">
+                            <button type="button" class="foto-crop-btn" data-foto-crop-id="{{ foto.pk }}" data-crop-url="{% url 'imoveis:foto_crop' foto.pk %}" data-original-src="{{ foto.url_para_recorte }}" title="Recortar foto"><i class="bi bi-crop"></i></button>
                             <button type="button" class="foto-delete-btn" data-foto-delete-id="{{ foto.pk }}" data-delete-url="{% url 'imoveis:foto_delete' foto.pk %}" title="Excluir foto">&times;</button>
                             <img src="{{ foto.imagem.url }}" alt="Foto {{ forloop.counter }}">
                         </div>
@@ -91,7 +93,8 @@
                     {% if object %}Adicionar novas fotos{% else %}Selecionar fotos{% endif %}
                 </label>
                 <input type="file" name="fotos" id="input_novas_fotos" class="form-control" multiple accept="image/*">
-                <div class="form-text">Selecione as imagens e use o <strong>X</strong> para remover antes de salvar.</div>
+                <input type="file" name="fotos_originais" id="input_fotos_originais" class="d-none" multiple accept="image/*" tabindex="-1" aria-hidden="true">
+                <div class="form-text">Selecione as imagens. Use <i class="bi bi-crop"></i> para recortar e <strong>X</strong> para remover antes de salvar.</div>
             </div>
 
             <div id="preview_novas_fotos" class="row g-3 mb-4 d-none"></div>
@@ -126,5 +129,6 @@
 {% block extra_js %}
 {% include 'includes/localidades_script.html' %}
 <script src="{% static 'js/moeda.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script src="{% static 'js/fotos.js' %}"></script>
 {% endblock %}
