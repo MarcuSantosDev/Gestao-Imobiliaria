@@ -1,136 +1,135 @@
-# Gestão Imobiliária - CRM
+# Gestão Imobiliária
 
-Sistema web para gestão imobiliária desenvolvido com Django. Permite cadastrar imóveis, clientes e corretores, gerenciar demandas de clientes com busca inteligente de compatibilidade, acompanhar indicadores no dashboard e consultar o histórico de negócios concluídos.
+Sistema CRM imobiliário desenvolvido em Django para gestão de imóveis, clientes, corretores e demandas.
+
+## Principais recursos
+
+- Cadastro de imóveis, clientes e corretores
+- Busca inteligente de imóveis por compatibilidade com demandas
+- Dashboard com indicadores e atalhos
+- Upload múltiplo de fotos com recorte
+- Compartilhamento de imóveis via WhatsApp
+- Download de fotos em ZIP
+- Histórico de imóveis e demandas finalizadas
+- Exclusão automática de arquivos de imagem ao remover fotos ou imóveis
 
 ## Requisitos
 
-- [Python](https://www.python.org/downloads/) 3.13 ou superior
-- `pip` (geralmente já vem com o Python)
+- Python 3.13+
+- pip
 
-## Como rodar o projeto
-
-### 1. Clonar o repositório
+## Instalação
 
 ```bash
 git clone <url-do-repositorio>
 cd Gestao-Imobiliaria
-```
 
-### 2. Criar e ativar o ambiente virtual
-
-**Windows (PowerShell):**
-
-```powershell
 python -m venv venv
+
+# Windows
 .\venv\Scripts\Activate.ps1
-```
 
-**Linux / macOS:**
-
-```bash
-python3 -m venv venv
+# Linux / macOS
 source venv/bin/activate
-```
 
-### 3. Instalar as dependências
-
-```bash
 pip install -r requirements.txt
-```
 
-### 4. Aplicar as migrações do banco de dados
-
-```bash
 python manage.py migrate
+python manage.py seed_dados
+python manage.py runserver
 ```
 
-O projeto usa **SQLite** por padrão. O arquivo `db.sqlite3` será criado automaticamente na raiz do projeto.
+Acesse:
 
-### 5. (Opcional) Popular dados iniciais
+```text
+http://127.0.0.1:8000/
+```
 
-Para cadastrar categorias e infraestruturas usadas nos formulários:
+### Windows (atalho)
+
+Após criar a venv e instalar as dependências, execute:
+
+```text
+iniciar.bat
+```
+
+## Dados de teste (opcional)
 
 ```bash
-python manage.py seed_dados
+python manage.py populate_db
 ```
 
-Para popular o banco com dados de teste (clientes, corretores, 50 imóveis e demandas):
+Cria dados fictícios para demonstração do sistema.
 
 ```bash
 python manage.py populate_db --clear
 ```
 
-> Use `--clear` para apagar os dados de teste anteriores antes de popular novamente.  
-> Para alterar a quantidade de imóveis: `python manage.py populate_db --clear --imoveis 50`
+Remove os dados de teste gerados.
 
-### 6. Iniciar o servidor
+## Módulos
 
-```bash
-python manage.py runserver
-```
-
-Acesse no navegador: **http://127.0.0.1:8000/**
+| Módulo     | Função                                      |
+| ---------- | ------------------------------------------- |
+| Dashboard  | Visão geral do sistema                      |
+| Imóveis    | Cadastro, fotos, filtros e compartilhamento |
+| Clientes   | Cadastro e gerenciamento de clientes        |
+| Corretores | Cadastro de corretores e imobiliárias       |
+| Demandas   | Busca inteligente de imóveis                |
+| Histórico  | Imóveis e demandas finalizadas              |
 
 ## Comandos úteis
 
-| Comando | Descrição |
-|---------|-----------|
-| `python manage.py runserver` | Sobe o servidor de desenvolvimento |
-| `python manage.py migrate` | Aplica migrações do banco |
-| `python manage.py seed_dados` | Cadastra categorias e infraestruturas |
-| `python manage.py populate_db --clear` | Popula o banco com dados de teste |
-| `python manage.py createsuperuser` | Cria usuário para o painel admin |
-| `python manage.py check` | Verifica se o projeto está configurado corretamente |
+```bash
+python manage.py runserver
+python manage.py migrate
+python manage.py seed_dados
+python manage.py createsuperuser
+python manage.py check
+```
 
-## Módulos do sistema
-
-| Módulo | Rota | Descrição |
-|--------|------|-----------|
-| Dashboard | `/` | Indicadores gerais e atalhos |
-| Imóveis | `/imoveis/` | Cadastro, fotos, filtros e compartilhamento WhatsApp |
-| Clientes | `/clientes/` | Cadastro e gestão de clientes |
-| Corretores | `/corretores/` | Autônomos e imobiliárias |
-| Demandas | `/demandas/` | Demandas abertas e busca inteligente de imóveis |
-| Histórico | `/historico/` | Demandas finalizadas e imóveis vendidos, alugados ou reservados |
-
-## Painel administrativo (opcional)
-
-Para acessar o admin do Django:
+## Admin Django
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Depois acesse: **http://127.0.0.1:8000/admin/**
+Acesse:
+
+```text
+http://127.0.0.1:8000/admin/
+```
 
 ## Estrutura do projeto
 
-```
+```text
 Gestao-Imobiliaria/
 ├── apps/
-│   ├── dashboard/      # Página inicial e indicadores
-│   ├── clientes/       # Módulo de clientes
-│   ├── corretores/     # Módulo de corretores
-│   ├── imoveis/        # Imóveis, modelos principais e comandos de seed
-│   ├── demandas/       # Demandas e busca inteligente
-│   └── relatorios/     # Histórico (demandas e imóveis concluídos)
-├── project/            # Configurações Django (settings, urls)
-├── templates/        # Templates globais
-├── static/             # Arquivos estáticos (JS, CSS)
-├── media/              # Uploads (fotos de imóveis)
+├── project/
+├── templates/
+├── static/
+├── media/
 ├── manage.py
-└── requirements.txt
+├── requirements.txt
+└── iniciar.bat
 ```
 
 ## Tecnologias
 
-- Django 6
+- Django
+- Pillow
+- django-filter
 - Bootstrap 5
+- Cropper.js
 - SQLite
-- Pillow (upload de imagens)
 
 ## Observações
 
-- O idioma padrão do sistema é **pt-BR** e o fuso horário é **America/Sao_Paulo**.
-- As fotos dos imóveis são salvas na pasta `media/`.
-- Este projeto é voltado para **desenvolvimento local**. Para produção, configure variáveis de ambiente, `SECRET_KEY`, `DEBUG = False` e um banco de dados adequado.
+- `seed_dados` cadastra as infraestruturas iniciais do sistema.
+- Arquivos enviados pelos usuários são armazenados em `media/`.
+- Ao excluir uma foto ou imóvel, os arquivos associados são removidos automaticamente.
+- Projeto configurado para desenvolvimento local utilizando SQLite.
+
+## Licença
+
+Este projeto é proprietário. Todos os direitos são reservados a Marcus Vinicius Vieira Santos. Consulte o arquivo LICENSE para mais informações.
