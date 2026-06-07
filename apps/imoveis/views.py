@@ -5,6 +5,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from apps.imoveis.fields import parse_moeda_br
 
 from apps.imoveis.localidades import BAIRROS, CIDADES, bairros_da_cidade
+from .foto_utils import gerar_imagem_exibicao, gerar_imagem_exibicao_de_arquivo, parse_recortes
 from .forms import ImovelForm
 from .mixins import LocalidadesFormMixin
 from .models import Corretor, FotoImovel, Imovel, Infraestrutura
@@ -22,14 +23,26 @@ from django.views.decorators.http import require_POST
 from django.utils.decorators import method_decorator
 
 
-def salvar_fotos_imovel(imovel, files):
-    fotos = files.getlist('fotos')
-    originais = files.getlist('fotos_originais')
-    for indice, foto in enumerate(fotos):
-        foto_obj = FotoImovel.objects.create(imovel=imovel, imagem=foto)
-        original = originais[indice] if indice < len(originais) else None
-        if original:
-            foto_obj.imagem_original.save(original.name, original, save=True)
+def salvar_fotos_imovel(imovel, files, recorte_json=''):
+    originais = files.getlist('fotos_originais') or files.getlist('fotos')
+    recortes = parse_recortes(recorte_json)
+
+    for indice, original in enumerate(originais):
+        if not original or original.size <= 0:
+            continue
+        original.seek(0)
+        bytes_original = original.read()
+        recorte = recortes[indice] if indice < len(recortes) else None
+
+        foto_obj = FotoImovel(imovel=imovel)
+        foto_obj.imagem_original.save(
+            original.name,
+            ContentFile(bytes_original),
+            save=False,
+        )
+        exibicao = gerar_imagem_exibicao(bytes_original, original.name, recorte)
+        foto_obj.imagem.save(exibicao.name, exibicao, save=False)
+        foto_obj.save()
 
 
 def preservar_original_foto(foto):
@@ -179,7 +192,11 @@ class ImovelCreateView(LocalidadesFormMixin, CreateView):
         return response
 
     def _salvar_fotos(self, imovel):
-        salvar_fotos_imovel(imovel, self.request.FILES)
+        salvar_fotos_imovel(
+            imovel,
+            self.request.FILES,
+            self.request.POST.get('fotos_recorte', ''),
+        )
 
 
 class ImovelUpdateView(LocalidadesFormMixin, UpdateView):
@@ -200,7 +217,11 @@ class ImovelUpdateView(LocalidadesFormMixin, UpdateView):
         return response
 
     def _salvar_fotos(self, imovel):
-        salvar_fotos_imovel(imovel, self.request.FILES)
+        salvar_fotos_imovel(
+            imovel,
+            self.request.FILES,
+            self.request.POST.get('fotos_recorte', ''),
+        )
 
 
 class ImovelDeleteView(DeleteView):
@@ -220,11 +241,17 @@ class ImovelCompartilharFotosView(View):
         imovel = Imovel.objects.prefetch_related('fotos').get(pk=pk)
         buffer = io.BytesIO()
 
-        with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_STORED) as zf:
             for i, foto in enumerate(imovel.fotos.all(), start=1):
-                if foto.imagem:
-                    ext = os.path.splitext(foto.imagem.name)[1] or '.jpg'
-                    zf.writestr(f'foto_{i}{ext}', foto.imagem.read())
+                arquivo = foto.arquivo_download()
+                if not arquivo:
+                    continue
+                ext = os.path.splitext(arquivo.name)[1].lower() or '.jpg'
+                nome_zip = f'foto_{i}{ext}'
+                with arquivo.open('rb') as conteudo:
+                    dados = conteudo.read()
+                if dados:
+                    zf.writestr(nome_zip, dados)
 
         nome_arquivo = f"{imovel.titulo.replace(' ', '_')}.zip"
         response = HttpResponse(buffer.getvalue(), content_type='application/zip')
@@ -250,14 +277,26 @@ class FotoImovelDeleteView(View):
 class FotoImovelCropView(View):
     def post(self, request, foto_pk):
         foto = get_object_or_404(FotoImovel, pk=foto_pk)
-        imagem = request.FILES.get('imagem')
-        if not imagem or not imagem.content_type.startswith('image/'):
-            return JsonResponse({'ok': False, 'error': 'Arquivo inválido'}, status=400)
+        try:
+            recorte = {
+                'x': float(request.POST['x']),
+                'y': float(request.POST['y']),
+                'width': float(request.POST['width']),
+                'height': float(request.POST['height']),
+            }
+        except (KeyError, TypeError, ValueError):
+            return JsonResponse({'ok': False, 'error': 'Dados de recorte inválidos'}, status=400)
+
         preservar_original_foto(foto)
+        origem = foto.imagem_original if foto.imagem_original else foto.imagem
+        if not origem:
+            return JsonResponse({'ok': False, 'error': 'Imagem não encontrada'}, status=400)
+
+        exibicao = gerar_imagem_exibicao_de_arquivo(origem, recorte)
         if foto.imagem:
             foto.imagem.delete(save=False)
-        foto.imagem = imagem
-        foto.save()
+        foto.imagem.save(exibicao.name, exibicao, save=True)
+
         url = foto.imagem.url
         separador = '&' if '?' in url else '?'
         return JsonResponse({

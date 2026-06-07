@@ -23,9 +23,12 @@ async function excluirFotoServidor(fotoId, deleteUrl) {
     return resp.json();
 }
 
-async function recortarFotoServidor(cropUrl, blob, fileName) {
+async function recortarFotoServidor(cropUrl, cropData) {
     const formData = new FormData();
-    formData.append('imagem', blob, fileName);
+    formData.append('x', cropData.x);
+    formData.append('y', cropData.y);
+    formData.append('width', cropData.width);
+    formData.append('height', cropData.height);
     const resp = await fetch(cropUrl, {
         method: 'POST',
         headers: {
@@ -75,7 +78,7 @@ const CROPPER_OPCOES = {
     responsive: true,
     restore: false,
     background: false,
-    checkOrientation: false,
+    checkOrientation: true,
     modal: false,
     guides: true,
     center: true,
@@ -132,24 +135,28 @@ function selecionarAreaInteira(instancia) {
 }
 
 function obterCanvasRecortado(instancia) {
+    const data = instancia.getData(true);
     const canvas = instancia.getCroppedCanvas({
+        width: data.width,
+        height: data.height,
         imageSmoothingEnabled: true,
         imageSmoothingQuality: 'high',
     });
     if (!canvas || !canvas.width || !canvas.height) return null;
+    return canvas;
+}
 
-    const maxLado = 1920;
-    const maiorLado = Math.max(canvas.width, canvas.height);
-    if (maiorLado <= maxLado) return canvas;
-
-    const escala = maxLado / maiorLado;
-    const redimensionado = document.createElement('canvas');
-    redimensionado.width = Math.round(canvas.width * escala);
-    redimensionado.height = Math.round(canvas.height * escala);
-    redimensionado.getContext('2d').drawImage(
-        canvas, 0, 0, redimensionado.width, redimensionado.height,
+function recorteEhImagemInteira(instancia) {
+    const data = instancia.getData(true);
+    const img = instancia.getImageData();
+    if (!img.naturalWidth || !img.naturalHeight) return false;
+    const tolerancia = 2;
+    return (
+        data.x <= tolerancia
+        && data.y <= tolerancia
+        && data.width >= img.naturalWidth - tolerancia
+        && data.height >= img.naturalHeight - tolerancia
     );
-    return redimensionado;
 }
 
 function montarCropper(img) {
@@ -279,44 +286,52 @@ function abrirRecorte(contexto) {
     modalRecorte.show();
 }
 
-function aplicarRecorte() {
+async function gerarUrlPreviewLocal(instancia) {
+    if (recorteEhImagemInteira(instancia)) {
+        return null;
+    }
+    const canvas = obterCanvasRecortado(instancia);
+    if (!canvas) return null;
+    const blob = await new Promise((resolve, reject) => {
+        canvas.toBlob(
+            (resultado) => (resultado ? resolve(resultado) : reject(new Error('Falha no preview'))),
+            'image/jpeg',
+            0.85,
+        );
+    });
+    return URL.createObjectURL(blob);
+}
+
+async function aplicarRecorte() {
     if (!cropper || !cropContext) return;
 
     const cropData = cropper.getData(true);
-    const canvas = obterCanvasRecortado(cropper);
-
-    if (!canvas) {
-        alert('Não foi possível recortar esta imagem.');
-        return;
-    }
-
     const btn = document.getElementById('btn-aplicar-recorte');
     btn.disabled = true;
 
-    canvas.toBlob(async (blob) => {
-        try {
-            if (cropContext.tipo === 'preview') {
-                await cropContext.onAplicar(blob, cropData);
-            } else if (cropContext.tipo === 'servidor') {
-                const data = await recortarFotoServidor(
-                    cropContext.cropUrl,
-                    blob,
-                    cropContext.fileName,
-                );
-                if (cropContext.imgElement) {
-                    cropContext.imgElement.src = data.url;
-                }
-                if (cropContext.onAplicarServidor) {
-                    cropContext.onAplicarServidor(data);
-                }
+    try {
+        if (cropContext.tipo === 'preview') {
+            const previewUrl = await gerarUrlPreviewLocal(cropper);
+            await cropContext.onAplicar(cropData, previewUrl);
+            modalRecorte.hide();
+            return;
+        }
+
+        if (cropContext.tipo === 'servidor') {
+            const data = await recortarFotoServidor(cropContext.cropUrl, cropData);
+            if (cropContext.imgElement) {
+                cropContext.imgElement.src = data.url;
+            }
+            if (cropContext.onAplicarServidor) {
+                cropContext.onAplicarServidor(data);
             }
             modalRecorte.hide();
-        } catch (e) {
-            alert('Não foi possível salvar o recorte.');
-        } finally {
-            btn.disabled = false;
         }
-    }, 'image/jpeg', 0.95);
+    } catch (e) {
+        alert('Não foi possível salvar o recorte.');
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 function initExclusaoFotosServidor(container) {
@@ -341,7 +356,6 @@ function initExclusaoFotosServidor(container) {
                     src: blobUrl,
                     revogarSrc: true,
                     cropUrl: btnCrop.dataset.cropUrl,
-                    fileName: `foto_${fotoId}.jpg`,
                     imgElement: img,
                     onAplicarServidor: (data) => {
                         if (data.original_url) {
@@ -394,28 +408,33 @@ function initExclusaoFotosServidor(container) {
 function initPreviewNovasFotos(inputId, previewId, inputOriginalId) {
     const input = document.getElementById(inputId);
     const inputOriginal = document.getElementById(inputOriginalId);
+    const inputRecorte = document.getElementById('input_fotos_recorte');
     const preview = document.getElementById(previewId);
     if (!input || !preview) return;
 
-    /** @type {{ original: File, atual: File, cropData: object|null, urlOriginal: string, urlAtual: string|null }[]} */
+    /** @type {{ original: File, cropData: object|null, urlOriginal: string, urlPreview: string|null }[]} */
     let fotosPreview = [];
 
     function revogarFoto(foto) {
         if (foto.urlOriginal) URL.revokeObjectURL(foto.urlOriginal);
-        if (foto.urlAtual && foto.urlAtual !== foto.urlOriginal) {
-            URL.revokeObjectURL(foto.urlAtual);
-        }
+        if (foto.urlPreview) URL.revokeObjectURL(foto.urlPreview);
     }
 
     function sincronizarInput() {
-        const dt = new DataTransfer();
         const dtOriginal = new DataTransfer();
+        const recortes = [];
+
         fotosPreview.forEach((foto) => {
-            dt.items.add(foto.atual);
             dtOriginal.items.add(foto.original);
+            recortes.push(foto.cropData);
         });
-        input.files = dt.files;
-        if (inputOriginal) inputOriginal.files = dtOriginal.files;
+
+        if (inputOriginal) {
+            inputOriginal.files = dtOriginal.files;
+        }
+        if (inputRecorte) {
+            inputRecorte.value = JSON.stringify(recortes);
+        }
     }
 
     function renderPreview() {
@@ -428,10 +447,6 @@ function initPreviewNovasFotos(inputId, previewId, inputOriginalId) {
 
         preview.classList.remove('d-none');
         fotosPreview.forEach((foto, index) => {
-            if (!foto.urlAtual) {
-                foto.urlAtual = URL.createObjectURL(foto.atual);
-            }
-
             const col = document.createElement('div');
             col.className = 'col-6 col-md-3 col-lg-2';
             col.dataset.previewIndex = index;
@@ -444,14 +459,21 @@ function initPreviewNovasFotos(inputId, previewId, inputOriginalId) {
                     <img class="preview-img" alt="Nova foto ${index + 1}">
                     <div class="p-2">
                         <small class="text-success d-block">Nova foto ${index + 1}</small>
-                        <small class="text-muted text-truncate d-block">${foto.atual.name}</small>
+                        <small class="text-muted text-truncate d-block">${foto.original.name}</small>
                     </div>
                 </div>`;
             preview.appendChild(col);
-            col.querySelector('.preview-img').src = foto.urlAtual;
+            col.querySelector('.preview-img').src = foto.urlPreview || foto.urlOriginal;
         });
 
         sincronizarInput();
+    }
+
+    const form = input.closest('form');
+    if (form) {
+        form.addEventListener('submit', () => {
+            sincronizarInput();
+        });
     }
 
     input.addEventListener('change', () => {
@@ -459,10 +481,9 @@ function initPreviewNovasFotos(inputId, previewId, inputOriginalId) {
         novos.forEach((arquivo) => {
             fotosPreview.push({
                 original: arquivo,
-                atual: arquivo,
                 cropData: null,
                 urlOriginal: URL.createObjectURL(arquivo),
-                urlAtual: null,
+                urlPreview: null,
             });
         });
         input.value = '';
@@ -480,15 +501,12 @@ function initPreviewNovasFotos(inputId, previewId, inputOriginalId) {
                 tipo: 'preview',
                 src: foto.urlOriginal,
                 cropData: foto.cropData,
-                fileName: foto.original.name.replace(/\.[^.]+$/, '') + '.jpg',
-                onAplicar: async (blob, cropData) => {
-                    const nome = foto.original.name.replace(/\.[^.]+$/, '') + '.jpg';
-                    if (foto.urlAtual && foto.urlAtual !== foto.urlOriginal) {
-                        URL.revokeObjectURL(foto.urlAtual);
+                onAplicar: async (cropData, previewUrl) => {
+                    if (foto.urlPreview) {
+                        URL.revokeObjectURL(foto.urlPreview);
                     }
-                    foto.atual = new File([blob], nome, { type: 'image/jpeg' });
                     foto.cropData = cropData;
-                    foto.urlAtual = URL.createObjectURL(foto.atual);
+                    foto.urlPreview = previewUrl;
                     renderPreview();
                 },
             });

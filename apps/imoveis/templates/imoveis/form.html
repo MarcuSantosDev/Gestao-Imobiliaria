@@ -92,8 +92,11 @@
                 <label class="form-label" for="input_novas_fotos">
                     {% if object %}Adicionar novas fotos{% else %}Selecionar fotos{% endif %}
                 </label>
-                <input type="file" name="fotos" id="input_novas_fotos" class="form-control" multiple accept="image/*">
-                <input type="file" name="fotos_originais" id="input_fotos_originais" class="d-none" multiple accept="image/*" tabindex="-1" aria-hidden="true">
+                <input type="file" id="input_novas_fotos" class="form-control" multiple accept="image/*">
+                <input type="hidden" name="fotos_recorte" id="input_fotos_recorte" value="">
+                <div class="visually-hidden" aria-hidden="true">
+                    <input type="file" name="fotos_originais" id="input_fotos_originais" multiple accept="image/*" tabindex="-1">
+                </div>
                 <div class="form-text">Selecione as imagens. Use <i class="bi bi-crop"></i> para recortar e <strong>X</strong> para remover antes de salvar.</div>
             </div>
 
