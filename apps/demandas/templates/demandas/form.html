@@ -192,21 +192,39 @@
         atualizarAndarMaximo();
     }
 
+    function alternarTodosCheckboxes(seletor, botao, rotuloMarcar, rotuloDesmarcar) {
+        const checkboxes = document.querySelectorAll(`${seletor} input[type="checkbox"]`);
+        if (!checkboxes.length) return;
+        const todosMarcados = [...checkboxes].every((cb) => cb.checked);
+        checkboxes.forEach((cb) => { cb.checked = !todosMarcados; });
+        if (botao) {
+            botao.innerHTML = todosMarcados
+                ? `<i class="bi bi-check2-all"></i> ${rotuloMarcar}`
+                : `<i class="bi bi-x-lg"></i> ${rotuloDesmarcar}`;
+        }
+    }
+
     const btnTodosBairros = document.getElementById('btn-selecionar-todos-bairros');
     if (btnTodosBairros) {
         btnTodosBairros.addEventListener('click', () => {
-            document.querySelectorAll('#bairros-container input[type="checkbox"]').forEach((cb) => {
-                cb.checked = true;
-            });
+            alternarTodosCheckboxes(
+                '#bairros-container',
+                btnTodosBairros,
+                'Selecionar todos os bairros',
+                'Desmarcar todos os bairros',
+            );
         });
     }
 
     const btnTodaInfra = document.getElementById('btn-selecionar-toda-infraestrutura');
     if (btnTodaInfra) {
         btnTodaInfra.addEventListener('click', () => {
-            document.querySelectorAll('#infraestrutura-container input[type="checkbox"]').forEach((cb) => {
-                cb.checked = true;
-            });
+            alternarTodosCheckboxes(
+                '#infraestrutura-container',
+                btnTodaInfra,
+                'Selecionar todas',
+                'Desmarcar todas',
+            );
         });
     }
 })();

@@ -246,6 +246,15 @@ class DemandaCliente(models.Model):
             return [self.bairro]
         return []
 
+    def get_bairros_resumo(self, limite=3):
+        bairros = self.get_bairros_lista()
+        if not bairros:
+            return ''
+        if len(bairros) <= limite:
+            return ', '.join(bairros)
+        extras = len(bairros) - limite
+        return f"{', '.join(bairros[:limite])} (+{extras})"
+
     def get_filtros_opcionais_obrigatorios_lista(self):
         if not self.filtros_obrigatorios:
             return []

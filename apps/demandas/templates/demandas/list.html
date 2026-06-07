@@ -36,7 +36,9 @@
                     <td>{{ demanda.get_tipo_imovel_display }}</td>
                     <td>{{ demanda.get_finalidade_display }}</td>
                     <td>{{ demanda.cidade|default:"—" }}</td>
-                    <td>{{ demanda.bairros|default:demanda.bairro|default:"—" }}</td>
+                    <td class="col-bairros"{% if demanda.get_bairros_lista|length > 3 %} title="{{ demanda.bairros|default:demanda.bairro }}"{% endif %}>
+                        {{ demanda.get_bairros_resumo|default:"—" }}
+                    </td>
                     <td class="col-date">{{ demanda.criado_em|date:"d/m/Y H:i" }}</td>
                     <td class="table-actions">
                         <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-sm btn-success">Buscar Imóveis</a>
