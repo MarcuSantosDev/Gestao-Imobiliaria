@@ -76,7 +76,7 @@ class ImovelListView(ListView):
     model = Imovel
     template_name = 'imoveis/list.html'
     context_object_name = 'imoveis'
-    paginate_by = 10
+    paginate_by = 15
 
     def get_queryset(self):
         qs = Imovel.objects.select_related('corretor').prefetch_related('fotos', 'infraestrutura')

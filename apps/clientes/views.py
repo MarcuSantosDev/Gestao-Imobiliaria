@@ -11,7 +11,7 @@ class ClienteListView(ListView):
     model = Cliente
     template_name = 'clientes/list.html'
     context_object_name = 'clientes'
-    paginate_by = 10
+    paginate_by = 20
 
     def get_queryset(self):
         qs = Cliente.objects.all()
