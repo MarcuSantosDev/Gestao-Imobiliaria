@@ -20,26 +20,58 @@ Sistema CRM imobiliário desenvolvido em Django para gestão de imóveis, client
 
 ## Instalação
 
+### 1. Clonar o repositório
+
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/MarcuSantosDev/Gestao-Imobiliaria.git
 cd Gestao-Imobiliaria
+```
 
+### 2. Criar o ambiente virtual
+
+```bash
 python -m venv venv
+```
 
-# Windows
+### 3. Ativar o ambiente virtual
+
+**Windows**
+
+```powershell
 .\venv\Scripts\Activate.ps1
+```
 
-# Linux / macOS
+**Linux / macOS**
+
+```bash
 source venv/bin/activate
+```
 
+### 4. Instalar as dependências
+
+```bash
 pip install -r requirements.txt
+```
 
+### 5. Aplicar as migrações
+
+```bash
 python manage.py migrate
+```
+
+### 6. Cadastrar os dados iniciais
+
+```bash
 python manage.py seed_dados
+```
+
+### 7. Iniciar o servidor
+
+```bash
 python manage.py runserver
 ```
 
-Acesse:
+### 8. Acessar o sistema
 
 ```text
 http://127.0.0.1:8000/
@@ -47,7 +79,7 @@ http://127.0.0.1:8000/
 
 ### Windows (atalho)
 
-Após criar a venv e instalar as dependências, execute:
+Após concluir a instalação uma vez, você pode iniciar o projeto apenas executando:
 
 ```text
 iniciar.bat
@@ -125,6 +157,8 @@ Gestao-Imobiliaria/
 
 ## Observações
 
+- O banco de dados (`db.sqlite3`) não faz parte do repositório.
+- Execute `python manage.py migrate` para criar a estrutura do banco local.
 - `seed_dados` cadastra as infraestruturas iniciais do sistema.
 - Arquivos enviados pelos usuários são armazenados em `media/`.
 - Ao excluir uma foto ou imóvel, os arquivos associados são removidos automaticamente.
