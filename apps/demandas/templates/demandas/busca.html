@@ -3,6 +3,23 @@
 
 {% block title %}Busca Inteligente - ImobiGest CRM{% endblock %}
 
+{% block extra_css %}
+<style>
+    .filtros-badges {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .filtros-badges .badge {
+        white-space: normal;
+        word-break: break-word;
+        text-align: left;
+        line-height: 1.35;
+        max-width: 100%;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
@@ -12,15 +29,15 @@
     <a href="{% url 'demandas:detail' demanda.pk %}" class="btn btn-secondary">Voltar</a>
 </div>
 
-<div class="card shadow-sm mb-4">
+<div class="card shadow-sm mb-4 overflow-hidden">
     <div class="card-body">
         <h6>Filtros obrigatórios</h6>
-        <p class="text-muted small">Imóveis fora destes critérios são excluídos da busca.</p>
-        <div class="d-flex flex-wrap gap-2 mb-3">
+        <p class="text-muted small">Imóveis fora dos critérios obrigatórios são excluídos da busca. Cidade e bairros são sempre obrigatórios.</p>
+        <div class="filtros-badges d-flex flex-wrap gap-2 mb-3">
             <span class="badge bg-danger">Cidade: {{ demanda.cidade }}</span>
-            {% if demanda.bairros or demanda.bairro %}
-            <span class="badge bg-danger">Bairros: {{ demanda.bairros|default:demanda.bairro }}</span>
-            {% endif %}
+            {% for bairro in demanda.get_bairros_lista %}
+            <span class="badge bg-danger">Bairro: {{ bairro }}</span>
+            {% endfor %}
             {% if demanda|filtro_obrigatorio:"tipo_imovel" %}
             <span class="badge bg-danger">Tipo: {{ demanda.get_tipo_imovel_display }}</span>
             {% endif %}
@@ -75,7 +92,7 @@
             {% endif %}
         </div>
         <h6 class="text-muted">Critérios de compatibilidade</h6>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="filtros-badges d-flex flex-wrap gap-2">
             {% if not demanda|filtro_obrigatorio:"tipo_imovel" %}
             <span class="badge bg-secondary">Tipo: {{ demanda.get_tipo_imovel_display }}</span>
             {% endif %}
@@ -129,7 +146,7 @@
             {% endfor %}
             {% endif %}
         </div>
-        <p class="text-muted small mb-0 mt-2">Cidade e bairros são sempre obrigatórios. Os demais critérios não marcados como obrigatórios influenciam a compatibilidade.</p>
+        <p class="text-muted small mb-0 mt-2">Os demais critérios não marcados como obrigatórios influenciam a compatibilidade.</p>
     </div>
 </div>
 
