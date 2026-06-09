@@ -5,15 +5,19 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Demanda de {{ demanda.cliente.nome }}</h1>
-    <div class="d-flex gap-2">
+    <div>
+        <h1 class="mb-1">Demanda de {{ demanda.cliente.nome }}</h1>
+        {% include 'includes/demanda_status_badge.html' %}
+    </div>
+    <div class="d-flex flex-wrap gap-2 justify-content-end">
+        <a href="{% url 'demandas:imoveis_selecionados' demanda.pk %}" class="btn btn-outline-info">
+            Imóveis selecionados ({{ imoveis_selecionados|length }})
+        </a>
         <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-success">Buscar Imóveis</a>
-        {% if demanda.status == 'aberta' %}
         <form method="post" action="{% url 'demandas:atender' demanda.pk %}">
             {% csrf_token %}
             <button class="btn btn-outline-success">Finalizar demanda</button>
         </form>
-        {% endif %}
         <a href="{% url 'demandas:update' demanda.pk %}" class="btn btn-outline-primary">Editar</a>
         <a href="{% url 'demandas:list' %}" class="btn btn-secondary">Voltar</a>
     </div>
@@ -69,6 +73,31 @@
                     <li>{{ item.nome }}</li>
                     {% endfor %}
                 </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Imóveis selecionados para o cliente</h5>
+                    <a href="{% url 'demandas:imoveis_selecionados' demanda.pk %}" class="btn btn-sm btn-outline-info">Ver todos</a>
+                </div>
+                {% if imoveis_selecionados %}
+                <ul class="mb-0">
+                    {% for imovel in imoveis_selecionados|slice:":5" %}
+                    <li>
+                        <a href="{% url 'imoveis:detail' imovel.pk %}">{{ imovel.titulo }}</a>
+                        — {{ imovel.bairro }} — {{ imovel.valor|moeda }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if imoveis_selecionados|length > 5 %}
+                <p class="text-muted small mb-0 mt-2">Há mais imóveis na lista completa.</p>
+                {% endif %}
+                {% else %}
+                <p class="text-muted mb-0">Nenhum imóvel selecionado. Use a busca inteligente para adicionar opções ao cliente.</p>
                 {% endif %}
             </div>
         </div>

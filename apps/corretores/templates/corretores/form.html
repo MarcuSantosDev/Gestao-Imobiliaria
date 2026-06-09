@@ -9,13 +9,37 @@
     <div class="card-body">
         <form method="post">
             {% csrf_token %}
-            {% for field in form %}
             <div class="mb-3">
-                <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
-                {{ field }}
-                {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                <label class="form-label" for="{{ form.nome.id_for_label }}">{{ form.nome.label }} *</label>
+                {{ form.nome }}
+                {% if form.nome.errors %}<div class="text-danger small">{{ form.nome.errors }}</div>{% endif %}
             </div>
-            {% endfor %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.telefone.id_for_label }}">{{ form.telefone.label }} *</label>
+                {{ form.telefone }}
+                {% if form.telefone.errors %}<div class="text-danger small">{{ form.telefone.errors }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.creci.id_for_label }}">{{ form.creci.label }} *</label>
+                {{ form.creci }}
+                {% if form.creci.errors %}<div class="text-danger small">{{ form.creci.errors }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.tipo.id_for_label }}">{{ form.tipo.label }} *</label>
+                {{ form.tipo }}
+                {% if form.tipo.errors %}<div class="text-danger small">{{ form.tipo.errors }}</div>{% endif %}
+            </div>
+            <div class="mb-3" id="grupo-imobiliaria">
+                <label class="form-label" for="{{ form.imobiliaria.id_for_label }}">{{ form.imobiliaria.label }} *</label>
+                {{ form.imobiliaria }}
+                <div class="form-text">Informe o nome da imobiliária à qual o corretor está vinculado.</div>
+                {% if form.imobiliaria.errors %}<div class="text-danger small">{{ form.imobiliaria.errors }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="{{ form.observacao.id_for_label }}">{{ form.observacao.label }}</label>
+                {{ form.observacao }}
+                {% if form.observacao.errors %}<div class="text-danger small">{{ form.observacao.errors }}</div>{% endif %}
+            </div>
             <div class="d-flex gap-2">
                 <button class="btn btn-primary">Salvar</button>
                 <a href="{% url 'corretores:list' %}" class="btn btn-secondary">Cancelar</a>
@@ -23,4 +47,24 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const tipo = document.getElementById('id_tipo');
+    const grupo = document.getElementById('grupo-imobiliaria');
+
+    function atualizarImobiliaria() {
+        if (!tipo || !grupo) return;
+        const exibir = tipo.value === 'imobiliaria';
+        grupo.style.display = exibir ? '' : 'none';
+    }
+
+    if (tipo) {
+        tipo.addEventListener('change', atualizarImobiliaria);
+        atualizarImobiliaria();
+    }
+})();
+</script>
 {% endblock %}

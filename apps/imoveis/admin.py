@@ -4,6 +4,7 @@ from .models import (
     Cliente,
     Corretor,
     DemandaCliente,
+    DemandaImovelSelecionado,
     FotoImovel,
     Imovel,
     Infraestrutura,
@@ -18,8 +19,9 @@ class ClienteAdmin(admin.ModelAdmin):
 
 @admin.register(Corretor)
 class CorretorAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'telefone', 'tipo')
-    search_fields = ('nome',)
+    list_display = ('nome', 'creci', 'telefone', 'tipo', 'imobiliaria')
+    search_fields = ('nome', 'creci', 'imobiliaria')
+    list_filter = ('tipo',)
 
 
 @admin.register(Infraestrutura)
@@ -41,6 +43,11 @@ class ImovelAdmin(admin.ModelAdmin):
     inlines = [FotoImovelInline]
 
 
+class DemandaImovelSelecionadoInline(admin.TabularInline):
+    model = DemandaImovelSelecionado
+    extra = 0
+
+
 @admin.register(DemandaCliente)
 class DemandaClienteAdmin(admin.ModelAdmin):
     list_display = (
@@ -48,3 +55,4 @@ class DemandaClienteAdmin(admin.ModelAdmin):
     )
     list_filter = ('status', 'tipo_imovel', 'finalidade', 'elevador', 'varanda')
     filter_horizontal = ('infraestrutura',)
+    inlines = [DemandaImovelSelecionadoInline]

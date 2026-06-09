@@ -1,0 +1,11 @@
+{% if demanda.status == 'aberta' %}
+<span class="badge bg-success">{{ demanda.get_status_display }}</span>
+{% elif demanda.status == 'com_proposta' %}
+<span class="badge bg-warning text-dark">{{ demanda.get_status_display }}</span>
+{% elif demanda.status == 'atendida' %}
+<span class="badge bg-primary">{{ demanda.get_status_display }}</span>
+{% elif demanda.status == 'cancelado' %}
+<span class="badge bg-secondary">{{ demanda.get_status_display }}</span>
+{% else %}
+<span class="badge bg-light text-dark">{{ demanda.get_status_display }}</span>
+{% endif %}

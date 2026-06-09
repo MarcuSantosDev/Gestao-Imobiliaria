@@ -6,6 +6,9 @@ from .views import (
     DemandaCreateView,
     DemandaDeleteView,
     DemandaDetailView,
+    DemandaImovelAdicionarView,
+    DemandaImovelRemoverView,
+    DemandaImoveisSelecionadosView,
     DemandaListView,
     DemandaUpdateView,
 )
@@ -20,4 +23,7 @@ urlpatterns = [
     path('deletar/<int:pk>/', DemandaDeleteView.as_view(), name='delete'),
     path('<int:pk>/buscar/', DemandaBuscaView.as_view(), name='buscar'),
     path('<int:pk>/atender/', DemandaAtenderView.as_view(), name='atender'),
+    path('<int:pk>/imoveis-selecionados/', DemandaImoveisSelecionadosView.as_view(), name='imoveis_selecionados'),
+    path('<int:pk>/imoveis/adicionar/', DemandaImovelAdicionarView.as_view(), name='imovel_adicionar'),
+    path('<int:pk>/imoveis/<int:imovel_pk>/remover/', DemandaImovelRemoverView.as_view(), name='imovel_remover'),
 ]

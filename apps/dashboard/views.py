@@ -22,7 +22,7 @@ class DashboardView(TemplateView):
             'imoveis_alugados': imoveis.filter(status='alugado').count(),
             'total_clientes': Cliente.objects.count(),
             'total_corretores': Corretor.objects.count(),
-            'demandas_abertas': demandas.filter(status='aberta').count(),
+            'demandas_abertas': demandas.filter(status__in=DemandaCliente.STATUS_ABERTAS).count(),
             'demandas_atendidas_mes': demandas.filter(
                 status='atendida',
                 atendida_em__year=agora.year,
@@ -30,6 +30,8 @@ class DashboardView(TemplateView):
             ).count(),
             'agora': agora,
             'ultimos_imoveis': imoveis.order_by('-id')[:5],
-            'ultimas_demandas': demandas.filter(status='aberta').order_by('-criado_em')[:5],
+            'ultimas_demandas': demandas.filter(
+                status__in=DemandaCliente.STATUS_ABERTAS,
+            ).order_by('-criado_em')[:5],
         })
         return context

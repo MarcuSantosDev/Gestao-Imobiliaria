@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1>Histórico de Demandas</h1>
-        <p class="text-muted mb-0">Demandas finalizadas</p>
+        <p class="text-muted mb-0">Demandas finalizadas ou canceladas</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{% url 'historico:index' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
@@ -32,6 +32,7 @@
                         </a>
                         <span class="d-none d-print-inline">Finalizada em</span>
                     </th>
+                    <th>Status</th>
                     <th>Tipo</th>
                     <th>Cidade</th>
                     <th class="col-num">Faixa de valor</th>
@@ -43,6 +44,7 @@
                 <tr>
                     <td>{{ demanda.cliente.nome }}</td>
                     <td class="col-date">{{ demanda.atendida_em|date:"d/m/Y H:i" }}</td>
+                    <td>{% include 'includes/demanda_status_badge.html' %}</td>
                     <td>{{ demanda.get_tipo_imovel_display }}</td>
                     <td>{{ demanda.cidade|default:"—" }}</td>
                     <td class="col-num">
@@ -60,7 +62,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr class="table-empty"><td colspan="6">Nenhuma demanda finalizada.</td></tr>
+                <tr class="table-empty"><td colspan="7">Nenhuma demanda no histórico.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

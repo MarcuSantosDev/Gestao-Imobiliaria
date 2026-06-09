@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load moeda_filters %}
+
+{% block title %}Imóveis selecionados - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Imóveis selecionados</h1>
+        <p class="text-muted mb-0">Demanda de {{ demanda.cliente.nome }} — {% include 'includes/demanda_status_badge.html' %}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-success"><i class="bi bi-search"></i> Buscar mais imóveis</a>
+        <a href="{% url 'demandas:list' %}" class="btn btn-secondary">Voltar</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-app mb-0">
+            <thead>
+                <tr>
+                    <th>Imóvel</th>
+                    <th>Cidade</th>
+                    <th>Bairro</th>
+                    <th class="col-num">Valor</th>
+                    <th>Status</th>
+                    <th class="table-actions">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for imovel in imoveis_selecionados %}
+                <tr>
+                    <td>{{ imovel.titulo }}</td>
+                    <td>{{ imovel.cidade }}</td>
+                    <td>{{ imovel.bairro }}</td>
+                    <td class="col-num">{{ imovel.valor|moeda }}</td>
+                    <td>{% include 'includes/imovel_status_badge.html' %}</td>
+                    <td class="table-actions">
+                        <a href="{% url 'imoveis:detail' imovel.pk %}" class="btn btn-sm btn-outline-info">Ver</a>
+                        <form method="post" action="{% url 'demandas:imovel_remover' demanda.pk imovel.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'demandas:imoveis_selecionados' demanda.pk %}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="table-empty">
+                    <td colspan="6">Nenhum imóvel selecionado para esta demanda.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

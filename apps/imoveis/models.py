@@ -22,7 +22,15 @@ class Corretor(models.Model):
 
     nome = models.CharField(max_length=150)
     telefone = models.CharField(max_length=20)
+    creci = models.CharField(max_length=20, verbose_name='CRECI')
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    imobiliaria = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True,
+        verbose_name='Imobiliária',
+        help_text='Obrigatório quando o corretor é vinculado a uma imobiliária',
+    )
     observacao = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -207,8 +215,13 @@ class DemandaCliente(models.Model):
 
     STATUS_CHOICES = [
         ('aberta', 'Aberta'),
+        ('com_proposta', 'Com proposta'),
         ('atendida', 'Finalizada'),
+        ('cancelado', 'Cancelada'),
     ]
+
+    STATUS_ABERTAS = ('aberta', 'com_proposta')
+    STATUS_HISTORICO = ('atendida', 'cancelado')
 
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
 
@@ -322,3 +335,40 @@ class DemandaCliente(models.Model):
 
     def get_filtros_compatibilidade_labels(self):
         return self._labels_filtros(self.get_filtros_compatibilidade_lista())
+
+    def esta_aberta(self):
+        return self.status in self.STATUS_ABERTAS
+
+    def esta_no_historico(self):
+        return self.status in self.STATUS_HISTORICO
+
+    def get_imoveis_selecionados(self):
+        return Imovel.objects.filter(
+            selecoes_demanda__demanda=self,
+        ).order_by('-selecoes_demanda__adicionado_em')
+
+
+class DemandaImovelSelecionado(models.Model):
+    demanda = models.ForeignKey(
+        'DemandaCliente',
+        on_delete=models.CASCADE,
+        related_name='imoveis_selecionados',
+    )
+    imovel = models.ForeignKey(
+        'Imovel',
+        on_delete=models.CASCADE,
+        related_name='selecoes_demanda',
+    )
+    adicionado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-adicionado_em']
+        constraints = [
+            models.UniqueConstraint(
+                fields=('demanda', 'imovel'),
+                name='demanda_imovel_unico',
+            ),
+        ]
+
+    def __str__(self):
+        return f'{self.demanda} — {self.imovel}'

@@ -34,6 +34,7 @@
                     <th>Finalidade</th>
                     <th>Cidade</th>
                     <th>Bairros</th>
+                    <th>Status</th>
                     <th class="col-date">Cadastro</th>
                     <th class="table-actions">Ações</th>
                 </tr>
@@ -48,15 +49,19 @@
                     <td class="col-bairros"{% if demanda.get_bairros_lista|length > 3 %} title="{{ demanda.bairros|default:demanda.bairro }}"{% endif %}>
                         {{ demanda.get_bairros_resumo|default:"—" }}
                     </td>
+                    <td>{% include 'includes/demanda_status_badge.html' %}</td>
                     <td class="col-date">{{ demanda.criado_em|date:"d/m/Y H:i" }}</td>
                     <td class="table-actions">
+                        <a href="{% url 'demandas:imoveis_selecionados' demanda.pk %}" class="btn btn-sm btn-outline-info">
+                            Imóveis{% if demanda.total_imoveis %} ({{ demanda.total_imoveis }}){% endif %}
+                        </a>
                         <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-sm btn-success">Buscar Imóveis</a>
                         <a href="{% url 'demandas:update' demanda.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                         <a href="{% url 'demandas:delete' demanda.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr class="table-empty"><td colspan="7">Nenhuma demanda em aberto.</td></tr>
+                <tr class="table-empty"><td colspan="8">Nenhuma demanda em aberto.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

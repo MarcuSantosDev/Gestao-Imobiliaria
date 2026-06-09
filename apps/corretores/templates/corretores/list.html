@@ -38,8 +38,10 @@
             <thead>
                 <tr>
                     <th>Nome</th>
+                    <th>CRECI</th>
                     <th>Telefone</th>
                     <th>Tipo</th>
+                    <th>Imobiliária</th>
                     <th class="table-actions">Ações</th>
                 </tr>
             </thead>
@@ -47,15 +49,17 @@
                 {% for corretor in corretores %}
                 <tr>
                     <td>{{ corretor.nome }}</td>
+                    <td>{{ corretor.creci }}</td>
                     <td>{{ corretor.telefone }}</td>
                     <td>{{ corretor.get_tipo_display }}</td>
+                    <td>{{ corretor.imobiliaria|default:"—" }}</td>
                     <td class="table-actions">
                         <a href="{% url 'corretores:update' corretor.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
                         <a href="{% url 'corretores:delete' corretor.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr class="table-empty"><td colspan="4">Nenhum corretor encontrado.</td></tr>
+                <tr class="table-empty"><td colspan="6">Nenhum corretor encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -53,14 +53,18 @@ class HistoricoDemandasView(HistoricoOrdenacaoMixin, ListView):
 
     def get_queryset(self):
         qs = DemandaCliente.objects.filter(
-            status='atendida'
+            status__in=DemandaCliente.STATUS_HISTORICO,
         ).select_related('cliente')
         return self.ordenar_queryset(qs)
 
 
 class DemandaReabrirView(View):
     def post(self, request, pk):
-        demanda = get_object_or_404(DemandaCliente, pk=pk, status='atendida')
+        demanda = get_object_or_404(
+            DemandaCliente,
+            pk=pk,
+            status__in=DemandaCliente.STATUS_HISTORICO,
+        )
         demanda.status = 'aberta'
         demanda.atendida_em = None
         demanda.save()

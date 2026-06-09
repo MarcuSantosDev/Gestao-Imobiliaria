@@ -200,15 +200,28 @@ class Command(BaseCommand):
         corretores = [
             Corretor.objects.get_or_create(
                 nome='Ana Paula Silva',
-                defaults={'telefone': '(83) 98765-4321', 'tipo': 'autonomo'},
+                defaults={
+                    'telefone': '(83) 98765-4321',
+                    'creci': '12345-PB',
+                    'tipo': 'autonomo',
+                },
             )[0],
             Corretor.objects.get_or_create(
                 nome='Carlos Mendes Imóveis',
-                defaults={'telefone': '(83) 3333-1111', 'tipo': 'imobiliaria'},
+                defaults={
+                    'telefone': '(83) 3333-1111',
+                    'creci': '54321-PB',
+                    'tipo': 'imobiliaria',
+                    'imobiliaria': 'Carlos Mendes Imóveis',
+                },
             )[0],
             Corretor.objects.get_or_create(
                 nome='Roberto Ferreira',
-                defaults={'telefone': '(83) 99876-5432', 'tipo': 'autonomo'},
+                defaults={
+                    'telefone': '(83) 99876-5432',
+                    'creci': '67890-PB',
+                    'tipo': 'autonomo',
+                },
             )[0],
         ]
 

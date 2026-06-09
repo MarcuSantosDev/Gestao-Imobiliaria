@@ -78,7 +78,9 @@ class DemandaForm(forms.ModelForm):
         else:
             self.fields['status'].choices = [
                 ('aberta', 'Aberta'),
+                ('com_proposta', 'Com proposta'),
                 ('atendida', 'Finalizada'),
+                ('cancelado', 'Cancelada'),
             ]
         self.fields['tipo_imovel'].label = 'Qual tipo de imóvel está procurando?'
         self.fields['finalidade'].label = 'Para locação ou venda?'
@@ -121,9 +123,9 @@ class DemandaForm(forms.ModelForm):
         if not instance.pk:
             instance.status = 'aberta'
             instance.atendida_em = None
-        elif instance.status == 'atendida' and not instance.atendida_em:
+        elif instance.status in DemandaCliente.STATUS_HISTORICO and not instance.atendida_em:
             instance.atendida_em = timezone.now()
-        elif instance.status == 'aberta':
+        elif instance.status in DemandaCliente.STATUS_ABERTAS:
             instance.atendida_em = None
         if commit:
             instance.save()
