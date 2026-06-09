@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% load moeda_filters %}
 
-{% block title %}Demanda - ImobiGest CRM{% endblock %}
+{% block title %}Detalhes da Demanda - ImobiGest CRM{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="mb-1">Demanda de {{ demanda.cliente.nome }}</h1>
+        <h1 class="mb-1">Detalhes da Demanda de {{ demanda.cliente.nome }}</h1>
         {% include 'includes/demanda_status_badge.html' %}
     </div>
     <div class="d-flex flex-wrap gap-2 justify-content-end">
