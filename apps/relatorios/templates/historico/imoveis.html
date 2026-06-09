@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1>Histórico de Imóveis</h1>
-        <p class="text-muted mb-0">Imóveis vendidos, alugados ou reservados</p>
+        <p class="text-muted mb-0">Imóveis vendidos</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{% url 'historico:index' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
@@ -37,6 +37,7 @@
                     <th>Cidade</th>
                     <th>Bairro</th>
                     <th class="col-status">Status</th>
+                    <th class="table-actions no-print">Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,9 +50,15 @@
                     <td>{{ imovel.cidade }}</td>
                     <td>{{ imovel.bairro }}</td>
                     <td class="col-status">{% include 'includes/imovel_status_badge.html' %}</td>
+                    <td class="table-actions no-print">
+                        <form method="post" action="{% url 'historico:imoveis_reabrir' imovel.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Tem certeza que deseja desfazer este imóvel?');">Desfazer</button>
+                        </form>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr class="table-empty"><td colspan="7">Nenhum imóvel vendido, alugado ou reservado.</td></tr>
+                <tr class="table-empty"><td colspan="8">Nenhum imóvel vendido, alugado ou reservado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

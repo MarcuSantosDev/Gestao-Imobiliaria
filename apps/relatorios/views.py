@@ -1,10 +1,10 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
-from django.views.generic import ListView, TemplateView, View
+from django.views.generic import DetailView, ListView, TemplateView, View
 
 from apps.imoveis.models import DemandaCliente, Imovel
 
-IMOVEIS_HISTORICO_STATUS = ('vendido', 'alugado', 'reservado')
+IMOVEIS_HISTORICO_STATUS = ('vendido',)
 
 
 class HistoricoOrdenacaoMixin:
@@ -56,6 +56,35 @@ class HistoricoDemandasView(HistoricoOrdenacaoMixin, ListView):
             status__in=DemandaCliente.STATUS_HISTORICO,
         ).select_related('cliente')
         return self.ordenar_queryset(qs)
+
+
+class HistoricoDemandaDetailView(DetailView):
+    model = DemandaCliente
+    template_name = 'historico/demanda_detail.html'
+    context_object_name = 'demanda'
+
+    def get_queryset(self):
+        return DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_HISTORICO).select_related('cliente')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['imoveis'] = self.object.get_imoveis_selecionados()
+        return context
+
+
+class HistoricoImovelReabrirView(View):
+    def post(self, request, pk):
+        imovel = get_object_or_404(
+            Imovel,
+            pk=pk,
+            status__in=IMOVEIS_HISTORICO_STATUS,
+        )
+        imovel.status = 'disponivel'
+        imovel.finalizado_em = None
+        imovel.save(update_fields=['status', 'finalizado_em'])
+        imovel.selecoes_demanda.all().delete()
+        messages.success(request, 'Imóvel reaberto e movido para a listagem de imóveis.')
+        return redirect('historico:imoveis')
 
 
 class DemandaReabrirView(View):

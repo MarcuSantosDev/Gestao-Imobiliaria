@@ -55,9 +55,10 @@
                         {% else %}—{% endif %}
                     </td>
                     <td class="table-actions no-print">
+                        <a href="{% url 'historico:demandas_detail' demanda.pk %}" class="btn btn-sm btn-outline-secondary me-1">Detalhes</a>
                         <form method="post" action="{% url 'historico:demandas_reabrir' demanda.pk %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Reabrir demanda</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Tem certeza que deseja reabrir esta demanda?');">Reabrir demanda</button>
                         </form>
                     </td>
                 </tr>

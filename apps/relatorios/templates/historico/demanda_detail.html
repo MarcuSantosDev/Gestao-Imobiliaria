@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load moeda_filters %}
+
+{% block title %}Detalhes da Demanda - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Detalhes da Demanda</h1>
+        <p class="text-muted mb-0">Resumo da demanda finalizada e imóveis vinculados</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'historico:demandas' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+        <button type="button" onclick="window.print()" class="btn btn-outline-secondary"><i class="bi bi-printer"></i> Imprimir</button>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h5">Dados da Demanda</h2>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">Cliente</dt>
+            <dd class="col-sm-9">{{ demanda.cliente.nome }}</dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">{% include 'includes/demanda_status_badge.html' %}</dd>
+
+            <dt class="col-sm-3">Atendida em</dt>
+            <dd class="col-sm-9">{{ demanda.atendida_em|date:"d/m/Y H:i" }}</dd>
+
+            <dt class="col-sm-3">Tipo de imóvel</dt>
+            <dd class="col-sm-9">{{ demanda.get_tipo_imovel_display }}</dd>
+
+            <dt class="col-sm-3">Cidade</dt>
+            <dd class="col-sm-9">{{ demanda.cidade|default:"—" }}</dd>
+
+            <dt class="col-sm-3">Faixa de valor</dt>
+            <dd class="col-sm-9">
+                {% if demanda.valor_minimo or demanda.valor_maximo %}
+                    {% if demanda.valor_minimo %}{{ demanda.valor_minimo|moeda }}{% else %}—{% endif %}
+                    —
+                    {% if demanda.valor_maximo %}{{ demanda.valor_maximo|moeda }}{% else %}—{% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Imóveis vinculados</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-app mb-0">
+            <thead>
+                <tr>
+                    <th>Imóvel</th>
+                    <th>Tipo</th>
+                    <th class="col-num">Valor</th>
+                    <th>Cidade</th>
+                    <th>Bairro</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for imovel in imoveis %}
+                <tr>
+                    <td>{{ imovel.titulo }}</td>
+                    <td>{{ imovel.get_tipo_display }}</td>
+                    <td class="col-num">{{ imovel.valor|moeda }}</td>
+                    <td>{{ imovel.cidade }}</td>
+                    <td>{{ imovel.bairro }}</td>
+                    <td>{% include 'includes/imovel_status_badge.html' %}</td>
+                </tr>
+                {% empty %}
+                <tr class="table-empty"><td colspan="6">Nenhum imóvel vinculado a esta demanda.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
