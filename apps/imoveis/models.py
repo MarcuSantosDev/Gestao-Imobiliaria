@@ -161,10 +161,10 @@ class FotoImovel(models.Model):
             return 0
 
     def arquivo_download(self):
-        if self.imagem_original and self._tamanho_arquivo(self.imagem_original) > 0:
-            return self.imagem_original
         if self.imagem and self._tamanho_arquivo(self.imagem) > 0:
             return self.imagem
+        if self.imagem_original and self._tamanho_arquivo(self.imagem_original) > 0:
+            return self.imagem_original
         return None
 
     def excluir_arquivos_midia(self):

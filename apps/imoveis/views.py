@@ -95,8 +95,6 @@ class ImovelListView(ListView):
             qs = qs.filter(finalidade=finalidade)
         if status := params.get('status', '').strip():
             qs = qs.filter(status=status)
-        else:
-            qs = qs.filter(status__in=['disponivel', 'reservado', 'alugado'])
         if tipo := params.get('tipo', '').strip():
             qs = qs.filter(tipo=tipo)
         if corretor := params.get('corretor', '').strip():

@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.views.generic import TemplateView
 
@@ -11,9 +11,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        agora = timezone.localtime()
+        usuario = self.request.user
+
         imoveis = Imovel.objects.all()
         demandas = DemandaCliente.objects.select_related('cliente')
-        agora = timezone.localtime()
+        demandas_usuario = demandas.filter(Q(owner=usuario) | Q(colaboradores=usuario)).distinct()
 
         context.update({
             'total_imoveis': imoveis.count(),
@@ -23,15 +26,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'imoveis_alugados': imoveis.filter(status='alugado').count(),
             'total_clientes': Cliente.objects.count(),
             'total_corretores': Corretor.objects.count(),
-            'demandas_abertas': demandas.filter(status__in=DemandaCliente.STATUS_ABERTAS).count(),
-            'demandas_atendidas_mes': demandas.filter(
+            'demandas_abertas': demandas_usuario.filter(status__in=DemandaCliente.STATUS_ABERTAS).count(),
+            'demandas_atendidas_mes': demandas_usuario.filter(
                 status='atendida',
                 atendida_em__year=agora.year,
                 atendida_em__month=agora.month,
             ).count(),
             'agora': agora,
-            'ultimos_imoveis': imoveis.order_by('-id')[:5],
-            'ultimas_demandas': demandas.filter(
+            'ultimos_imoveis': Imovel.objects.filter(created_by=usuario).order_by('-id')[:5],
+            'ultimas_demandas': demandas_usuario.filter(
                 status__in=DemandaCliente.STATUS_ABERTAS,
             ).order_by('-criado_em')[:5],
         })
