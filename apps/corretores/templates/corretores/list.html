@@ -11,11 +11,15 @@
 <div class="card shadow-sm mb-3">
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label class="form-label">Nome ou telefone</label>
                 <input type="text" name="q" class="form-control" placeholder="Buscar corretor..." value="{{ request.GET.q }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label">CRECI</label>
+                <input type="text" name="creci" class="form-control" placeholder="Buscar CRECI" value="{{ request.GET.creci }}">
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">Tipo</label>
                 <select name="tipo" class="form-select">
                     <option value="">Todos</option>
@@ -24,7 +28,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3 d-flex gap-2">
+            <div class="col-md-2 d-flex gap-2">
                 <button class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
                 <a href="{% url 'corretores:list' %}" class="btn btn-outline-secondary">Limpar</a>
             </div>

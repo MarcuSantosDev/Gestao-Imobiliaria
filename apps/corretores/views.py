@@ -21,6 +21,8 @@ class CorretorListView(ListView):
             qs = qs.filter(
                 Q(nome__icontains=q) | Q(telefone__icontains=q)
             )
+        if creci := params.get('creci', '').strip():
+            qs = qs.filter(creci__icontains=creci)
         if tipo := params.get('tipo', '').strip():
             qs = qs.filter(tipo=tipo)
 

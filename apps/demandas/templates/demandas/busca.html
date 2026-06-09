@@ -82,10 +82,10 @@
             <span class="badge bg-danger">Varanda: {{ demanda.get_varanda_display }}</span>
             {% endif %}
             {% if demanda|filtro_obrigatorio:"vagas" and demanda.vagas %}
-            <span class="badge bg-danger">Vagas: {{ demanda.vagas }}+</span>
+            <span class="badge bg-danger">Garagem: {{ demanda.vagas }}+</span>
             {% endif %}
             {% if demanda|filtro_obrigatorio:"vagas_cobertas" and demanda.vagas_cobertas %}
-            <span class="badge bg-danger">Vagas cobertas: {{ demanda.vagas_cobertas }}+</span>
+            <span class="badge bg-danger">Garagens cobertas: {{ demanda.vagas_cobertas }}+</span>
             {% endif %}
             {% if demanda|filtro_obrigatorio:"posicao_solar" and demanda.posicao_solar != 'indiferente' %}
             <span class="badge bg-danger">Posição solar: {{ demanda.get_posicao_solar_display }}</span>
@@ -137,10 +137,10 @@
             <span class="badge bg-secondary">Varanda: {{ demanda.get_varanda_display }}</span>
             {% endif %}
             {% if not demanda|filtro_obrigatorio:"vagas" and demanda.vagas %}
-            <span class="badge bg-secondary">Vagas: {{ demanda.vagas }}+</span>
+            <span class="badge bg-secondary">Garagem: {{ demanda.vagas }}+</span>
             {% endif %}
             {% if not demanda|filtro_obrigatorio:"vagas_cobertas" and demanda.vagas_cobertas %}
-            <span class="badge bg-secondary">Vagas cobertas: {{ demanda.vagas_cobertas }}+</span>
+            <span class="badge bg-secondary">Garagens cobertas: {{ demanda.vagas_cobertas }}+</span>
             {% endif %}
             {% if not demanda|filtro_obrigatorio:"posicao_solar" and demanda.posicao_solar != 'indiferente' %}
             <span class="badge bg-secondary">Posição solar: {{ demanda.get_posicao_solar_display }}</span>

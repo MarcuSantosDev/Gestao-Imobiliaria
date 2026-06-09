@@ -65,7 +65,8 @@ class ImovelForm(forms.ModelForm):
         self.fields['area_total'].label = 'Área do imóvel (m²)'
         self.fields['total_andares'].label = 'Total de andares do prédio'
         self.fields['andar'].label = 'Andar do imóvel'
-        self.fields['vagas_cobertas'].label = 'Vagas cobertas'
+        self.fields['vagas'].label = 'Garagem'
+        self.fields['vagas_cobertas'].label = 'Garagens cobertas'
         if self.instance.pk and self.instance.bairro:
             self.fields['bairro'].initial = self.instance.bairro
 
@@ -78,7 +79,7 @@ class ImovelForm(forms.ModelForm):
         vagas = cleaned_data.get('vagas') or 0
         vagas_cobertas = cleaned_data.get('vagas_cobertas') or 0
         if vagas_cobertas > vagas:
-            self.add_error('vagas_cobertas', 'Vagas cobertas não pode ser maior que o total de vagas.')
+            self.add_error('vagas_cobertas', 'Garagens cobertas não pode ser maior que o total de garagem.')
         return cleaned_data
 
     def save(self, commit=True):

@@ -63,8 +63,8 @@
                     {% endif %}
                     <li>Varanda: {{ demanda.get_varanda_display }}</li>
                     <li>Posição solar: {{ demanda.get_posicao_solar_display }}</li>
-                    <li>Vagas mínimas: {{ demanda.vagas|default:"—" }}</li>
-                    <li>Vagas cobertas mínimas: {{ demanda.vagas_cobertas|default:"—" }}</li>
+                    <li>Garagem mínima: {{ demanda.vagas|default:"—" }}</li>
+                    <li>Garagens cobertas mínimas: {{ demanda.vagas_cobertas|default:"—" }}</li>
                 </ul>
                 {% if demanda.infraestrutura.all %}
                 <h6 class="mt-3">Infraestrutura desejada</h6>

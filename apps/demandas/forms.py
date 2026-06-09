@@ -84,8 +84,8 @@ class DemandaForm(forms.ModelForm):
             ]
         self.fields['tipo_imovel'].label = 'Qual tipo de imóvel está procurando?'
         self.fields['finalidade'].label = 'Para locação ou venda?'
-        self.fields['vagas'].label = 'Quantas vagas de garagem?'
-        self.fields['vagas_cobertas'].label = 'Vagas cobertas (mínimo)'
+        self.fields['vagas'].label = 'Garagem (mínimo)'
+        self.fields['vagas_cobertas'].label = 'Garagens cobertas (mínimo)'
         self.fields['area_minima'].label = 'Área mínima (m²)'
         self.fields['andar_maximo'].label = 'Sem elevador — até qual andar?'
         self.fields['suites'].label = 'Suítes (mínimo)'
@@ -108,7 +108,7 @@ class DemandaForm(forms.ModelForm):
         vagas = cleaned_data.get('vagas')
         vagas_cobertas = cleaned_data.get('vagas_cobertas')
         if vagas_cobertas is not None and vagas is not None and vagas_cobertas > vagas:
-            self.add_error('vagas_cobertas', 'Vagas cobertas não pode ser maior que o total de vagas.')
+            self.add_error('vagas_cobertas', 'Garagens cobertas não pode ser maior que o total de garagem.')
         return cleaned_data
 
     def save(self, commit=True):

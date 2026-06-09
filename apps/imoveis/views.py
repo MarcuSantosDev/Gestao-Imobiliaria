@@ -8,7 +8,7 @@ from apps.imoveis.localidades import BAIRROS, CIDADES, bairros_da_cidade
 from .foto_utils import gerar_imagem_exibicao, gerar_imagem_exibicao_de_arquivo, parse_recortes
 from .forms import ImovelForm
 from .mixins import LocalidadesFormMixin
-from .models import Corretor, FotoImovel, Imovel, Infraestrutura
+from .models import Corretor, DemandaCliente, FotoImovel, Imovel, Infraestrutura
 from .sharing import gerar_texto_compartilhamento
 
 import io
@@ -178,6 +178,11 @@ class ImovelDetailView(DetailView):
         return super().get_queryset().select_related('corretor').prefetch_related(
             'fotos', 'infraestrutura'
         )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['demandas_abertas'] = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+        return context
 
 
 class ImovelCreateView(LocalidadesFormMixin, CreateView):

@@ -93,8 +93,8 @@ class Imovel(models.Model):
     suites = models.IntegerField(default=0)
     banheiros = models.IntegerField(default=0)
 
-    vagas = models.IntegerField(default=0)
-    vagas_cobertas = models.IntegerField(default=0)
+    vagas = models.IntegerField(default=0, verbose_name='Garagem')
+    vagas_cobertas = models.IntegerField(default=0, verbose_name='Garagens cobertas')
 
     area_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     area_construida = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
@@ -185,8 +185,8 @@ FILTRO_DEMANDA_CHOICES = [
     ('condominio_maximo', 'Condomínio máximo'),
     ('elevador', 'Elevador'),
     ('varanda', 'Varanda'),
-    ('vagas', 'Vagas'),
-    ('vagas_cobertas', 'Vagas cobertas'),
+    ('vagas', 'Garagem'),
+    ('vagas_cobertas', 'Garagens cobertas'),
     ('bairros', 'Bairros'),
     ('posicao_solar', 'Posição solar'),
     ('infraestrutura', 'Infraestrutura'),
@@ -258,8 +258,8 @@ class DemandaCliente(models.Model):
 
     condominio_maximo = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
-    vagas = models.IntegerField(null=True, blank=True)
-    vagas_cobertas = models.IntegerField(null=True, blank=True, verbose_name='Vagas cobertas mínimas')
+    vagas = models.IntegerField(null=True, blank=True, verbose_name='Garagem mínima')
+    vagas_cobertas = models.IntegerField(null=True, blank=True, verbose_name='Garagens cobertas mínimas')
 
     posicao_solar = models.CharField(
         max_length=15,

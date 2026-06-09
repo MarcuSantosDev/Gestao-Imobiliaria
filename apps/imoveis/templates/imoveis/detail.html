@@ -78,13 +78,42 @@
 
         <div class="card shadow-sm mb-3">
             <div class="card-body">
+                <h5>Adicionar à demanda</h5>
+                {% if demandas_abertas %}
+                <form id="adicionarDemandaForm" method="post" class="row g-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="imovel_id" value="{{ imovel.pk }}">
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    <div class="col-12">
+                        <label class="form-label" for="demanda_id">Demanda</label>
+                        <select id="demanda_id" name="demanda_id" class="form-select" required>
+                            <option value="">Selecione uma demanda</option>
+                            {% for demanda in demandas_abertas %}
+                            <option value="{{ demanda.pk }}">{{ demanda.cliente.nome }} — {{ demanda.get_tipo_imovel_display }} / {{ demanda.get_finalidade_display }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex gap-2 align-items-center">
+                        <button type="submit" class="btn btn-success">Adicionar à demanda</button>
+                        <a href="{% url 'demandas:create' %}" class="btn btn-outline-secondary">Nova demanda</a>
+                    </div>
+                </form>
+                {% else %}
+                <p class="mb-0">Não há demandas abertas disponíveis para adicionar este imóvel.</p>
+                <a href="{% url 'demandas:create' %}" class="btn btn-outline-primary mt-2">Nova demanda</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
                 <h5>Características</h5>
                 <ul class="list-unstyled mb-0">
                     {% if imovel.area_total %}<li>Área: {{ imovel.area_total }} m²</li>{% endif %}
                     <li>Dormitórios: {{ imovel.dormitorios }}</li>
                     <li>Suítes: {{ imovel.suites }}</li>
                     <li>Banheiros: {{ imovel.banheiros }}</li>
-                    <li>Vagas: {{ imovel.vagas }}{% if imovel.vagas_cobertas %} ({{ imovel.vagas_cobertas }} coberta{{ imovel.vagas_cobertas|pluralize:"s" }}){% endif %}</li>
+                    <li>Garagem: {{ imovel.vagas }}{% if imovel.vagas_cobertas %} ({{ imovel.vagas_cobertas }} coberta{{ imovel.vagas_cobertas|pluralize:"s" }}){% endif %}</li>
                     {% if imovel.total_andares %}<li>Total de andares: {{ imovel.total_andares }}</li>{% endif %}
                     {% if imovel.andar is not None %}<li>Andar: {{ imovel.andar }}º</li>{% endif %}
                     <li>Elevador: {% if imovel.elevador %}Sim{% else %}Não{% endif %}</li>
@@ -149,5 +178,20 @@ document.getElementById('btnBaixarFotos')?.addEventListener('click', (event) => 
     {% endif %}
     mostrarAlerta('Download iniciado. Verifique a pasta de downloads do seu navegador.');
 });
+
+const adicionarDemandaForm = document.getElementById('adicionarDemandaForm');
+if (adicionarDemandaForm) {
+    adicionarDemandaForm.addEventListener('submit', function(event) {
+        const demandaSelect = document.getElementById('demanda_id');
+        const demandaId = demandaSelect?.value;
+        if (!demandaId) {
+            event.preventDefault();
+            demandaSelect.focus();
+            return;
+        }
+        const actionBase = "{% url 'demandas:imovel_adicionar' 0 %}";
+        this.action = actionBase.replace('/0/', `/${demandaId}/`);
+    });
+}
 </script>
 {% endblock %}

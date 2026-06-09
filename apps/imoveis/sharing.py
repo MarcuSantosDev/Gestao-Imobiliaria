@@ -20,7 +20,7 @@ def gerar_texto_compartilhamento(imovel):
     if imovel.banheiros:
         caracteristicas.append(f"Banheiros: {imovel.banheiros}")
     if imovel.vagas:
-        caracteristicas.append(f"Vagas: {imovel.vagas}")
+        caracteristicas.append(f"Garagem: {imovel.vagas}")
 
     if caracteristicas:
         linhas.append('')
