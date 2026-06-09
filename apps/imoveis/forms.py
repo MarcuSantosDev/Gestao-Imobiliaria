@@ -2,13 +2,20 @@ from django import forms
 
 from apps.imoveis.fields import MoedaDecimalField
 from apps.imoveis.infra_utils import sincronizar_elevador_varanda
+from apps.imoveis.models import DemandaCliente, DemandaImovelSelecionado, Imovel
 from .localidades import CIDADES, bairros_da_cidade
-from .models import Imovel
 
 
 class ImovelForm(forms.ModelForm):
     valor = MoedaDecimalField(label='Valor', required=True)
     valor_condominio = MoedaDecimalField(label='Valor do condomínio', required=False)
+    demanda_vinculada = forms.ModelChoiceField(
+        queryset=DemandaCliente.objects.none(),
+        label='Demanda vinculada',
+        required=False,
+        empty_label='Selecione a demanda',
+        help_text='Quando o imóvel for reservado, alugado ou vendido, escolha a única demanda à qual ele ficará vinculado.',
+    )
 
     class Meta:
         model = Imovel
@@ -34,6 +41,7 @@ class ImovelForm(forms.ModelForm):
             'corretor',
             'infraestrutura',
             'status',
+            'demanda_vinculada',
         ]
         widgets = {
             'descricao': forms.Textarea(attrs={'rows': 4}),
@@ -67,11 +75,27 @@ class ImovelForm(forms.ModelForm):
         self.fields['andar'].label = 'Andar do imóvel'
         self.fields['vagas'].label = 'Garagem'
         self.fields['vagas_cobertas'].label = 'Garagens cobertas'
+
+        demandas_abertas = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+        if self.instance.pk:
+            demandas_abertas = demandas_abertas | DemandaCliente.objects.filter(
+                pk__in=self.instance.selecoes_demanda.values_list('demanda_id', flat=True)
+            )
+            demandas_abertas = demandas_abertas.distinct()
+            if self.instance.status in Imovel.HISTORICO_STATUS:
+                first_demand_id = self.instance.selecoes_demanda.values_list('demanda_id', flat=True).first()
+                if first_demand_id:
+                    self.fields['demanda_vinculada'].initial = first_demand_id
+
+        self.fields['demanda_vinculada'].queryset = demandas_abertas
         if self.instance.pk and self.instance.bairro:
             self.fields['bairro'].initial = self.instance.bairro
 
     def clean(self):
         cleaned_data = super().clean()
+        status = cleaned_data.get('status')
+        demanda_vinculada = cleaned_data.get('demanda_vinculada')
+
         if not cleaned_data.get('cidade'):
             self.add_error('cidade', 'Selecione a cidade.')
         if not cleaned_data.get('bairro'):
@@ -80,13 +104,29 @@ class ImovelForm(forms.ModelForm):
         vagas_cobertas = cleaned_data.get('vagas_cobertas') or 0
         if vagas_cobertas > vagas:
             self.add_error('vagas_cobertas', 'Garagens cobertas não pode ser maior que o total de garagem.')
+
+        if status in Imovel.HISTORICO_STATUS and not demanda_vinculada:
+            self.add_error('demanda_vinculada', 'Informe a demanda vinculada quando o imóvel for reservado, alugado ou vendido.')
+
+        if demanda_vinculada and demanda_vinculada.status not in DemandaCliente.STATUS_ABERTAS:
+            self.add_error('demanda_vinculada', 'A demanda selecionada deve estar aberta.')
+
         return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)
+        demanda_vinculada = self.cleaned_data.get('demanda_vinculada')
         if commit:
             instance.save()
             self.save_m2m()
             sincronizar_elevador_varanda(instance)
             instance.save(update_fields=['elevador', 'varanda'])
+            if instance.status in Imovel.HISTORICO_STATUS and demanda_vinculada:
+                DemandaImovelSelecionado.objects.get_or_create(
+                    imovel=instance,
+                    demanda=demanda_vinculada,
+                )
+                DemandaImovelSelecionado.objects.filter(imovel=instance).exclude(
+                    demanda=demanda_vinculada,
+                ).delete()
         return instance

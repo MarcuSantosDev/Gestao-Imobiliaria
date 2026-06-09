@@ -79,7 +79,22 @@
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <h5>Adicionar à demanda</h5>
-                {% if demandas_abertas %}
+                {% if imovel.status != 'disponivel' %}
+                    {% if imovel_demandas %}
+                    <div class="mb-3">
+                        <label class="form-label">Demanda vinculada</label>
+                        <select class="form-select" disabled>
+                            {% for selecao in imovel_demandas %}
+                            <option selected>{{ selecao.demanda.cliente.nome }} — {{ selecao.demanda.get_tipo_imovel_display }} / {{ selecao.demanda.get_finalidade_display }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="small text-muted mt-2">Este imóvel está reservado, alugado ou vendido e fica vinculado a esta demanda.</p>
+                    </div>
+                    {% else %}
+                    <p class="mb-0">Este imóvel está com status <strong>{{ imovel.get_status_display }}</strong> e não pode ser adicionado a nenhuma demanda.</p>
+                    <p class="small text-muted mt-2">Somente imóveis disponíveis podem ser vinculados a demandas.</p>
+                    {% endif %}
+                {% elif demandas_abertas %}
                 <form id="adicionarDemandaForm" method="post" class="row g-2">
                     {% csrf_token %}
                     <input type="hidden" name="imovel_id" value="{{ imovel.pk }}">
@@ -101,6 +116,16 @@
                 {% else %}
                 <p class="mb-0">Não há demandas abertas disponíveis para adicionar este imóvel.</p>
                 <a href="{% url 'demandas:create' %}" class="btn btn-outline-primary mt-2">Nova demanda</a>
+                {% endif %}
+                {% if imovel.status == 'disponivel' and imovel_demandas %}
+                <div class="mt-3">
+                    <p class="mb-1"><strong>Demandas já vinculadas a este imóvel:</strong></p>
+                    <ul class="list-unstyled small mb-0">
+                        {% for selecao in imovel_demandas %}
+                        <li>• {{ selecao.demanda.cliente.nome }} — {{ selecao.demanda.get_tipo_imovel_display }} / {{ selecao.demanda.get_finalidade_display }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
                 {% endif %}
             </div>
         </div>

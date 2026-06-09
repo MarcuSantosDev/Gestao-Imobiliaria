@@ -139,6 +139,14 @@ class DemandaImovelAdicionarView(View):
     def post(self, request, pk):
         demanda = get_object_or_404(DemandaCliente, pk=pk, status__in=DemandaCliente.STATUS_ABERTAS)
         imovel = get_object_or_404(Imovel, pk=request.POST.get('imovel_id'))
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
+
+        if imovel.status != 'disponivel':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'ok': False, 'error': 'Somente imóveis disponíveis podem ser adicionados à demanda.'}, status=400)
+            messages.error(request, 'Somente imóveis disponíveis podem ser adicionados à demanda.')
+            return redirect(next_url or reverse_lazy('imoveis:detail', kwargs={'pk': imovel.pk}))
+
         selecao, criado = DemandaImovelSelecionado.objects.get_or_create(
             demanda=demanda,
             imovel=imovel,
@@ -153,7 +161,6 @@ class DemandaImovelAdicionarView(View):
             messages.success(request, f'Imóvel "{imovel.titulo}" adicionado à demanda.')
         else:
             messages.info(request, 'Este imóvel já estava selecionado.')
-        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
         if next_url:
             return redirect(next_url)
         return redirect('demandas:imoveis_selecionados', pk=demanda.pk)

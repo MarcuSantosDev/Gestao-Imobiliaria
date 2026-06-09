@@ -182,6 +182,11 @@ class ImovelDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['demandas_abertas'] = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+        selecoes = self.object.selecoes_demanda.select_related('demanda').all()
+        context['imovel_demandas'] = selecoes
+        context['imovel_disponivel_para_demanda'] = (
+            self.object.status == 'disponivel' and not selecoes.exists()
+        )
         return context
 
 

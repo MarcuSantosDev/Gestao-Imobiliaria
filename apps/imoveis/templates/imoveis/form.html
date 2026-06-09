@@ -125,6 +125,15 @@
                 </div>
             </div>
 
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3" id="demanda-vinculada-container" style="display: none;">
+                    <label class="form-label" for="{{ form.demanda_vinculada.id_for_label }}">{{ form.demanda_vinculada.label }}{% if form.demanda_vinculada.field.required %} *{% endif %}</label>
+                    {{ form.demanda_vinculada }}
+                    {% if form.demanda_vinculada.help_text %}<div class="form-text">{{ form.demanda_vinculada.help_text }}</div>{% endif %}
+                    {% if form.demanda_vinculada.errors %}<div class="text-danger small">{{ form.demanda_vinculada.errors }}</div>{% endif %}
+                </div>
+            </div>
+
             <div class="d-flex gap-2">
                 <button class="btn btn-primary">Salvar</button>
                 <a href="{% url 'imoveis:list' %}" class="btn btn-secondary">Cancelar</a>
@@ -163,6 +172,22 @@
                 'Desmarcar todas',
             );
         });
+    }
+
+    const statusField = document.getElementById('{{ form.status.id_for_label }}');
+    const demandaContainer = document.getElementById('demanda-vinculada-container');
+    const mostraDemanda = () => {
+        const status = statusField?.value;
+        if (status === 'reservado' || status === 'vendido' || status === 'alugado') {
+            demandaContainer.style.display = 'block';
+        } else {
+            demandaContainer.style.display = 'none';
+        }
+    };
+
+    if (statusField && demandaContainer) {
+        mostraDemanda();
+        statusField.addEventListener('change', mostraDemanda);
     }
 })();
 </script>
