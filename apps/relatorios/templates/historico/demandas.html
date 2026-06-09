@@ -21,6 +21,7 @@
             <thead>
                 <tr>
                     <th>Cliente</th>
+                    <th>Colaboração</th>
                     <th class="col-date">
                         <a href="?{% querystring ordem=ordem_proxima page=1 %}" class="d-inline-flex align-items-center gap-1 no-print">
                             Finalizada em
@@ -43,6 +44,13 @@
                 {% for demanda in demandas %}
                 <tr>
                     <td>{{ demanda.cliente.nome }}</td>
+                    <td>
+                        {% if demanda.is_shared %}
+                        <span class="badge bg-primary" title="Demanda em parceria">Parceria</span>
+                        {% else %}
+                        <span class="badge bg-secondary" title="Demanda individual">Individual</span>
+                        {% endif %}
+                    </td>
                     <td class="col-date">{{ demanda.atendida_em|date:"d/m/Y H:i" }}</td>
                     <td>{% include 'includes/demanda_status_badge.html' %}</td>
                     <td>{{ demanda.get_tipo_imovel_display }}</td>

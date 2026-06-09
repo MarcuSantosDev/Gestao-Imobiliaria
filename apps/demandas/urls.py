@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     DemandaAtenderView,
     DemandaBuscaView,
+    DemandaColaboradorRemoverView,
     DemandaCreateView,
     DemandaDeleteView,
     DemandaDetailView,
@@ -11,6 +12,7 @@ from .views import (
     DemandaImoveisSelecionadosView,
     DemandaListView,
     DemandaUpdateView,
+    NotificacaoActionView,
 )
 
 app_name = 'demandas'
@@ -26,4 +28,6 @@ urlpatterns = [
     path('<int:pk>/imoveis-selecionados/', DemandaImoveisSelecionadosView.as_view(), name='imoveis_selecionados'),
     path('<int:pk>/imoveis/adicionar/', DemandaImovelAdicionarView.as_view(), name='imovel_adicionar'),
     path('<int:pk>/imoveis/<int:imovel_pk>/remover/', DemandaImovelRemoverView.as_view(), name='imovel_remover'),
+    path('<int:pk>/colaboradores/<int:usuario_pk>/remover/', DemandaColaboradorRemoverView.as_view(), name='colaborador_remover'),
+    path('notificacoes/<int:pk>/<str:action>/', NotificacaoActionView.as_view(), name='notification_action'),
 ]

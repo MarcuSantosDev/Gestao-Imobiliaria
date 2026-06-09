@@ -55,7 +55,7 @@ class HistoricoDemandasView(LoginRequiredMixin, HistoricoOrdenacaoMixin, ListVie
     def get_queryset(self):
         qs = DemandaCliente.objects.filter(
             status__in=DemandaCliente.STATUS_HISTORICO,
-        ).select_related('cliente')
+        ).select_related('cliente').prefetch_related('colaboradores')
         return self.ordenar_queryset(qs)
 
 
@@ -65,7 +65,7 @@ class HistoricoDemandaDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'demanda'
 
     def get_queryset(self):
-        return DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_HISTORICO).select_related('cliente')
+        return DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_HISTORICO).select_related('cliente').prefetch_related('colaboradores')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

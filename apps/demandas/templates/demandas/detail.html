@@ -10,20 +10,61 @@
         {% include 'includes/demanda_status_badge.html' %}
     </div>
     <div class="d-flex flex-wrap gap-2 justify-content-end">
-        <a href="{% url 'demandas:imoveis_selecionados' demanda.pk %}" class="btn btn-outline-info">
+        <a href="{% url 'demandas:imoveis_selecionados' demanda.pk %}" class="btn btn-sm btn-outline-info">
             Imóveis selecionados ({{ imoveis_selecionados|length }})
         </a>
-        <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-success">Buscar Imóveis</a>
-        <form method="post" action="{% url 'demandas:atender' demanda.pk %}">
+        <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-sm btn-success">Buscar imóveis</a>
+        {% if demanda.status in demanda.STATUS_ABERTAS %}
+        <form method="post" action="{% url 'demandas:atender' demanda.pk %}" class="m-0">
             {% csrf_token %}
-            <button class="btn btn-outline-success">Finalizar demanda</button>
+            <button class="btn btn-sm btn-outline-success">Finalizar demanda</button>
         </form>
-        <a href="{% url 'demandas:update' demanda.pk %}" class="btn btn-outline-primary">Editar</a>
-        <a href="{% url 'demandas:list' %}" class="btn btn-secondary">Voltar</a>
+        {% endif %}
+        <a href="{% url 'demandas:update' demanda.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
+        <a href="{% url 'demandas:list' %}" class="btn btn-sm btn-secondary">Voltar</a>
     </div>
 </div>
 
 <div class="row g-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p><strong>Proprietário:</strong> {{ demanda.owner.username }}</p>
+                <p><strong>Colaboradores:</strong>
+                    {% if demanda.colaboradores.exists %}
+                        {% for colaborador in demanda.colaboradores.all %}
+                            <span class="badge bg-info text-dark me-1 d-inline-flex align-items-center">
+                                <i class="bi bi-person-check-fill me-1" title="Colaborador confirmado"></i>
+                                {{ colaborador.username }}
+                                {% if user == demanda.owner %}
+                                    <form method="post" action="{% url 'demandas:colaborador_remover' demanda.pk colaborador.pk %}" class="d-inline ms-2" onsubmit="return confirm('Tem certeza que deseja remover {{ colaborador.username }} da demanda?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-close" aria-label="Remover"></button>
+                                    </form>
+                                {% endif %}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+                {% if user == demanda.owner %}
+                <p><strong>Convites pendentes:</strong>
+                    {% if pending_colaborador_convites %}
+                        {% for convite in pending_colaborador_convites %}
+                            <span class="badge bg-warning text-dark me-1 d-inline-flex align-items-center">
+                                <i class="bi bi-hourglass-split me-1" title="Aguardando confirmação"></i>
+                                {{ convite.destinatario.username }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
     <div class="col-md-6">
         <div class="card shadow-sm">
             <div class="card-body">

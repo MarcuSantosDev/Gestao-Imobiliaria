@@ -239,6 +239,12 @@ class DemandaCliente(models.Model):
         blank=True,
         related_name='demandas',
     )
+    colaboradores = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name='demandas_colaboradas',
+        help_text='Usuários que colaboram nessa demanda.',
+    )
 
     tipo_imovel = models.CharField(max_length=30, choices=TIPO_CHOICES)
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES)
@@ -317,6 +323,14 @@ class DemandaCliente(models.Model):
         extras = len(bairros) - limite
         return f"{', '.join(bairros[:limite])} (+{extras})"
 
+    @property
+    def is_shared(self):
+        return self.colaboradores.exists()
+
+    @property
+    def is_exclusive(self):
+        return not self.is_shared
+
     def get_filtros_opcionais_obrigatorios_lista(self):
         if not self.filtros_obrigatorios:
             return []
@@ -364,6 +378,65 @@ class DemandaCliente(models.Model):
 
     def tem_imovel_vendido_ou_alugado(self):
         return self.get_imoveis_selecionados().filter(status__in=Imovel.HISTORICO_STATUS).exists()
+
+
+class Notificacao(models.Model):
+    TIPO_CONVITE_COLABORADOR = 'convite_colaborador'
+    TIPOS = [
+        (TIPO_CONVITE_COLABORADOR, 'Convite de colaboração'),
+    ]
+
+    STATUS_PENDING = 'pending'
+    STATUS_ACCEPTED = 'accepted'
+    STATUS_DECLINED = 'declined'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pendente'),
+        (STATUS_ACCEPTED, 'Aceito'),
+        (STATUS_DECLINED, 'Recusado'),
+    ]
+
+    destinatario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notificacoes',
+    )
+    remetente = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notificacoes_enviadas',
+    )
+    demanda = models.ForeignKey(
+        'DemandaCliente',
+        on_delete=models.CASCADE,
+        related_name='notificacoes',
+    )
+    tipo = models.CharField(max_length=50, choices=TIPOS, default=TIPO_CONVITE_COLABORADOR)
+    mensagem = models.CharField(max_length=255)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    lida = models.BooleanField(default=False)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f'Notificação para {self.destinatario} sobre {self.demanda}'
+
+    def aceitar(self):
+        if self.status != self.STATUS_PENDING:
+            return
+        self.status = self.STATUS_ACCEPTED
+        self.lida = True
+        self.save()
+        self.demanda.colaboradores.add(self.destinatario)
+
+    def recusar(self):
+        if self.status != self.STATUS_PENDING:
+            return
+        self.status = self.STATUS_DECLINED
+        self.lida = True
+        self.save()
 
 
 class DemandaImovelSelecionado(models.Model):

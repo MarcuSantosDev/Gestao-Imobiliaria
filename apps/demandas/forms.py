@@ -1,9 +1,10 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 from apps.imoveis.fields import MoedaDecimalField
 from apps.imoveis.localidades import CIDADES, bairros_da_cidade
-from apps.imoveis.models import DemandaCliente, FILTRO_DEMANDA_OPCOES, Imovel
+from apps.imoveis.models import DemandaCliente, FILTRO_DEMANDA_OPCOES, Imovel, Notificacao
 
 
 class DemandaForm(forms.ModelForm):
@@ -15,6 +16,14 @@ class DemandaForm(forms.ModelForm):
         required=False,
         widget=forms.CheckboxSelectMultiple,
         label='Bairros desejados',
+    )
+
+    colaboradores = forms.ModelMultipleChoiceField(
+        queryset=get_user_model().objects.none(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'size': '5'}),
+        label='Colaboradores',
+        help_text='Selecione outros usuários que podem colaborar nesta demanda.',
     )
 
     filtros_obrigatorios_selecionados = forms.MultipleChoiceField(
@@ -63,6 +72,7 @@ class DemandaForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         cidade = self.data.get('cidade') or (self.instance.cidade if self.instance.pk else '')
         bairros = bairros_da_cidade(cidade)
@@ -73,6 +83,14 @@ class DemandaForm(forms.ModelForm):
         self.fields['filtros_obrigatorios_selecionados'].initial = (
             self.instance.get_filtros_opcionais_obrigatorios_lista() if self.instance.pk else []
         )
+        colaboradores_qs = get_user_model().objects.filter(is_superuser=False)
+        if self.user is not None:
+            colaboradores_qs = colaboradores_qs.exclude(pk=self.user.pk)
+        self.fields['colaboradores'].queryset = colaboradores_qs.order_by('username')
+        self.fields['colaboradores'].label = 'Convidar novos colaboradores'
+        self.fields['colaboradores'].help_text = 'Selecione usuários para convidar. Eles só passam a colaborar após aceitarem o convite.'
+        if self.instance and self.instance.pk:
+            self.fields['colaboradores'].initial = []
         if not self.instance.pk:
             self.fields.pop('status', None)
         else:
@@ -117,6 +135,17 @@ class DemandaForm(forms.ModelForm):
             elif not selecionados.filter(status__in=Imovel.HISTORICO_STATUS).exists():
                 self.add_error('status', 'A demanda só pode ser finalizada quando um imóvel selecionado estiver vendido ou alugado.')
 
+        colaboradores = cleaned_data.get('colaboradores')
+        if self.user and colaboradores and self.user in colaboradores:
+            self.add_error('colaboradores', 'Você não pode selecionar a si mesmo como colaborador.')
+
+        if colaboradores and colaboradores.filter(is_superuser=True).exists():
+            self.add_error('colaboradores', 'Superusuários não podem ser colaboradores.')
+
+        if self.instance.pk and self.instance.owner and colaboradores:
+            if self.instance.owner in colaboradores:
+                self.add_error('colaboradores', 'O proprietário não pode ser listado como colaborador.')
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -135,7 +164,32 @@ class DemandaForm(forms.ModelForm):
             instance.atendida_em = timezone.now()
         elif instance.status in DemandaCliente.STATUS_ABERTAS:
             instance.atendida_em = None
+        invited_users = self.cleaned_data.get('colaboradores') or []
         if commit:
             instance.save()
             self.save_m2m()
+            self._criar_convites(instance, invited_users)
         return instance
+
+    def _criar_convites(self, instance, convidados):
+        if not convidados:
+            return
+        for usuario in convidados:
+            if usuario == self.user:
+                continue
+            if instance.colaboradores.filter(pk=usuario.pk).exists():
+                continue
+            if Notificacao.objects.filter(
+                destinatario=usuario,
+                demanda=instance,
+                tipo=Notificacao.TIPO_CONVITE_COLABORADOR,
+                status=Notificacao.STATUS_PENDING,
+            ).exists():
+                continue
+            Notificacao.objects.create(
+                destinatario=usuario,
+                remetente=self.user,
+                demanda=instance,
+                tipo=Notificacao.TIPO_CONVITE_COLABORADOR,
+                mensagem=f'{self.user.username} convidou você para colaborar na demanda de {instance.cliente.nome}.',
+            )

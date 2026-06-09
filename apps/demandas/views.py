@@ -1,8 +1,9 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -13,7 +14,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from apps.imoveis.localidades import BAIRROS
 from apps.imoveis.mixins import LocalidadesFormMixin
-from apps.imoveis.models import DemandaCliente, DemandaImovelSelecionado, Imovel
+from apps.imoveis.models import DemandaCliente, DemandaImovelSelecionado, Imovel, Notificacao
 
 from .forms import DemandaForm
 from .matching import buscar_imoveis_compativeis
@@ -22,7 +23,7 @@ from .matching import buscar_imoveis_compativeis
 def queryset_demandas_abertas(user=None):
     qs = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
     if user is not None:
-        qs = qs.filter(owner=user)
+        qs = qs.filter(Q(owner=user) | Q(colaboradores=user)).distinct()
     return qs
 
 
@@ -35,12 +36,18 @@ class DemandaListView(LoginRequiredMixin, ListView):
         qs = (
             queryset_demandas_abertas(self.request.user)
             .select_related('cliente')
+            .prefetch_related('colaboradores')
             .annotate(total_imoveis=Count('imoveis_selecionados'))
         )
         busca = self.request.GET.get('q', '').strip()
+        ownership = self.request.GET.get('ownership', '')
         if busca:
             qs = qs.filter(cliente__nome__icontains=busca)
-        return qs.order_by('-criado_em')
+        if ownership == 'exclusive':
+            qs = qs.filter(colaboradores__isnull=True)
+        elif ownership == 'shared':
+            qs = qs.filter(colaboradores__isnull=False)
+        return qs.order_by('-criado_em').distinct()
 
 
 class DemandaDetailView(LoginRequiredMixin, DetailView):
@@ -49,7 +56,7 @@ class DemandaDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'demanda'
 
     def get_queryset(self):
-        return queryset_demandas_abertas(self.request.user).select_related('cliente')
+        return queryset_demandas_abertas(self.request.user).select_related('cliente').prefetch_related('colaboradores')
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -61,10 +68,23 @@ class DemandaDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['imoveis_selecionados'] = self.object.get_imoveis_selecionados()
+        if self.request.user == self.object.owner:
+            context['pending_colaborador_convites'] = Notificacao.objects.filter(
+                demanda=self.object,
+                tipo=Notificacao.TIPO_CONVITE_COLABORADOR,
+                status=Notificacao.STATUS_PENDING,
+            ).select_related('destinatario')
+        else:
+            context['pending_colaborador_convites'] = []
         return context
 
 
 class DemandaFormMixin(LocalidadesFormMixin):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.object and self.object.pk:
@@ -90,7 +110,7 @@ class DemandaUpdateView(LoginRequiredMixin, DemandaFormMixin, UpdateView):
     success_url = reverse_lazy('demandas:list')
 
     def get_queryset(self):
-        return queryset_demandas_abertas(self.request.user)
+        return queryset_demandas_abertas(self.request.user).prefetch_related('colaboradores')
 
     def form_valid(self, form):
         self.object = form.save()
@@ -119,7 +139,7 @@ class DemandaBuscaView(LoginRequiredMixin, DetailView):
     context_object_name = 'demanda'
 
     def get_queryset(self):
-        return queryset_demandas_abertas(self.request.user)
+        return queryset_demandas_abertas(self.request.user).prefetch_related('colaboradores')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -137,7 +157,7 @@ class DemandaImoveisSelecionadosView(LoginRequiredMixin, DetailView):
     context_object_name = 'demanda'
 
     def get_queryset(self):
-        return queryset_demandas_abertas(self.request.user)
+        return queryset_demandas_abertas(self.request.user).prefetch_related('colaboradores')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -149,10 +169,8 @@ class DemandaImoveisSelecionadosView(LoginRequiredMixin, DetailView):
 class DemandaImovelAdicionarView(LoginRequiredMixin, View):
     def post(self, request, pk):
         demanda = get_object_or_404(
-            DemandaCliente,
+            queryset_demandas_abertas(request.user),
             pk=pk,
-            owner=request.user,
-            status__in=DemandaCliente.STATUS_ABERTAS,
         )
         imovel = get_object_or_404(Imovel, pk=request.POST.get('imovel_id'))
         next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
@@ -186,10 +204,8 @@ class DemandaImovelAdicionarView(LoginRequiredMixin, View):
 class DemandaImovelRemoverView(LoginRequiredMixin, View):
     def post(self, request, pk, imovel_pk):
         demanda = get_object_or_404(
-            DemandaCliente,
+            queryset_demandas_abertas(request.user),
             pk=pk,
-            owner=request.user,
-            status__in=DemandaCliente.STATUS_ABERTAS,
         )
         selecao = get_object_or_404(
             DemandaImovelSelecionado,
@@ -210,13 +226,50 @@ class DemandaImovelRemoverView(LoginRequiredMixin, View):
         return redirect('demandas:imoveis_selecionados', pk=demanda.pk)
 
 
+class DemandaColaboradorRemoverView(LoginRequiredMixin, View):
+    def post(self, request, pk, usuario_pk):
+        demanda = get_object_or_404(
+            queryset_demandas_abertas(request.user),
+            pk=pk,
+        )
+        if demanda.owner != request.user:
+            messages.error(request, 'Apenas o proprietário pode remover colaboradores.')
+            return redirect(request.META.get('HTTP_REFERER') or reverse_lazy('demandas:detail', kwargs={'pk': demanda.pk}))
+
+        colaborador = get_object_or_404(get_user_model(), pk=usuario_pk)
+        if not demanda.colaboradores.filter(pk=colaborador.pk).exists():
+            messages.info(request, 'Colaborador não encontrado nesta demanda.')
+        else:
+            demanda.colaboradores.remove(colaborador)
+            messages.success(request, f'{colaborador.username} foi removido da demanda.')
+
+        return redirect(request.META.get('HTTP_REFERER') or reverse_lazy('demandas:detail', kwargs={'pk': demanda.pk}))
+
+
+class NotificacaoActionView(LoginRequiredMixin, View):
+    def post(self, request, pk, action):
+        notificacao = get_object_or_404(
+            Notificacao.objects.select_related('demanda', 'remetente'),
+            pk=pk,
+            destinatario=request.user,
+            status=Notificacao.STATUS_PENDING,
+        )
+        if action == 'accept':
+            notificacao.aceitar()
+            messages.success(request, 'Você aceitou o convite de colaboração.')
+        elif action == 'decline':
+            notificacao.recusar()
+            messages.success(request, 'Você recusou o convite de colaboração.')
+        else:
+            messages.error(request, 'Ação de notificação inválida.')
+        return redirect(request.META.get('HTTP_REFERER') or reverse_lazy('demandas:list'))
+
+
 class DemandaAtenderView(LoginRequiredMixin, View):
     def post(self, request, pk):
         demanda = get_object_or_404(
-            DemandaCliente,
+            queryset_demandas_abertas(request.user),
             pk=pk,
-            owner=request.user,
-            status__in=DemandaCliente.STATUS_ABERTAS,
         )
         selecionados = demanda.get_imoveis_selecionados()
         if not selecionados.exists():

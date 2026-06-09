@@ -153,15 +153,27 @@
             <div class="text-danger small mb-3">{{ form.filtros_obrigatorios_selecionados.errors }}</div>
             {% endif %}
 
-            {% if form.status %}
-            <div class="row mb-4">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label">{{ form.status.label }}</label>
-                    {{ form.status }}
-                    {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+            <hr class="my-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Colaboração e status</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.colaboradores.label }}</label>
+                            {{ form.colaboradores }}
+                            {% if form.colaboradores.help_text %}<div class="form-text">{{ form.colaboradores.help_text }}</div>{% endif %}
+                            {% if form.colaboradores.errors %}<div class="text-danger small">{{ form.colaboradores.errors }}</div>{% endif %}
+                        </div>
+                        {% if form.status %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.status.label }}</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}<div class="text-danger small">{{ form.status.errors }}</div>{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-            {% endif %}
 
             <div class="d-flex gap-2">
                 <button class="btn btn-primary">Salvar</button>

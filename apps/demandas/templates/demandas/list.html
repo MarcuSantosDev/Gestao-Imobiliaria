@@ -11,12 +11,20 @@
 <div class="card shadow-sm mb-3">
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-6 col-lg-5">
+            <div class="col-md-5 col-lg-4">
                 <input type="text" name="q" id="demanda-busca-cliente" class="form-control" placeholder="Nome do cliente..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-4 col-lg-3">
+                <label class="form-label visually-hidden" for="filtro-ownership">Tipo de demanda</label>
+                <select name="ownership" id="filtro-ownership" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="exclusive" {% if request.GET.ownership == 'exclusive' %}selected{% endif %}>Individuais</option>
+                    <option value="shared" {% if request.GET.ownership == 'shared' %}selected{% endif %}>Em parceria</option>
+                </select>
             </div>
             <div class="col-md-auto d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i>Filtrar</button>
-                {% if request.GET.q %}
+                {% if request.GET.q or request.GET.ownership %}
                 <a href="{% url 'demandas:list' %}" class="btn btn-outline-secondary">Limpar</a>
                 {% endif %}
             </div>
@@ -42,7 +50,16 @@
             <tbody>
                 {% for demanda in demandas %}
                 <tr>
-                    <td><a href="{% url 'demandas:detail' demanda.pk %}">{{ demanda.cliente.nome }}</a></td>
+                    <td>
+                        <a href="{% url 'clientes:update' demanda.cliente.pk %}" class="text-decoration-none">
+                            {{ demanda.cliente.nome }}
+                        </a>
+                        {% if demanda.is_shared %}
+                        <span class="text-primary ms-1" title="Demanda em parceria"><i class="bi bi-people-fill"></i></span>
+                        {% else %}
+                        <span class="text-secondary ms-1" title="Demanda individual"><i class="bi bi-person-circle"></i></span>
+                        {% endif %}
+                    </td>
                     <td>{{ demanda.get_tipo_imovel_display }}</td>
                     <td>{{ demanda.get_finalidade_display }}</td>
                     <td>{{ demanda.cidade|default:"—" }}</td>
@@ -52,12 +69,37 @@
                     <td>{% include 'includes/demanda_status_badge.html' %}</td>
                     <td class="col-date">{{ demanda.criado_em|date:"d/m/Y H:i" }}</td>
                     <td class="table-actions">
-                        <a href="{% url 'demandas:imoveis_selecionados' demanda.pk %}" class="btn btn-sm btn-outline-info">
-                            Imóveis{% if demanda.total_imoveis %} ({{ demanda.total_imoveis }}){% endif %}
-                        </a>
-                        <a href="{% url 'demandas:buscar' demanda.pk %}" class="btn btn-sm btn-success">Buscar Imóveis</a>
-                        <a href="{% url 'demandas:update' demanda.pk %}" class="btn btn-sm btn-outline-primary">Editar</a>
-                        <a href="{% url 'demandas:delete' demanda.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        <div class="d-flex flex-wrap gap-1">
+                            <a href="{% url 'demandas:detail' demanda.pk %}" class="btn btn-sm btn-outline-secondary">Detalhes</a>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Ações
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'demandas:buscar' demanda.pk %}">
+                                            <i class="bi bi-search me-2"></i>Buscar imóveis
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'demandas:imoveis_selecionados' demanda.pk %}">
+                                            <i class="bi bi-house-door me-2"></i>Imóveis selecionados{% if demanda.total_imoveis %} ({{ demanda.total_imoveis }}){% endif %}
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'demandas:update' demanda.pk %}">
+                                            <i class="bi bi-pencil-square me-2"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{% url 'demandas:delete' demanda.pk %}">
+                                            <i class="bi bi-trash me-2"></i>Excluir
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

@@ -154,6 +154,7 @@ class Command(BaseCommand):
             'tipo_imovel': dados['tipo_imovel'],
             'finalidade': dados['finalidade'],
             'cidade': dados['cidade'],
+            'bairros': bairros,
         }
         defaults = {
             'status': dados['status'],
@@ -175,7 +176,16 @@ class Command(BaseCommand):
             'filtros_obrigatorios': dados.get('filtros_obrigatorios', ''),
             'atendida_em': dados.get('atendida_em'),
         }
-        demanda, created = DemandaCliente.objects.update_or_create(**lookup, defaults=defaults)
+        existing_demandas = list(DemandaCliente.objects.filter(**lookup))
+        if len(existing_demandas) > 1:
+            demanda = existing_demandas[0]
+            DemandaCliente.objects.filter(pk__in=[d.pk for d in existing_demandas[1:]]).delete()
+            for field, value in defaults.items():
+                setattr(demanda, field, value)
+            demanda.save()
+            created = False
+        else:
+            demanda, created = DemandaCliente.objects.update_or_create(**lookup, defaults=defaults)
         if usuarios_padrao:
             owner = usuarios_padrao[index % len(usuarios_padrao)]
             if demanda.owner_id != owner.pk:
@@ -190,6 +200,9 @@ class Command(BaseCommand):
             demanda.infraestrutura.set(self._infra_por_nome(infra_list, *infra_nomes))
         elif created:
             demanda.infraestrutura.clear()
+
+        if 'colaboradores' in dados:
+            demanda.colaboradores.set(dados['colaboradores'])
         return demanda, created
 
     def handle(self, *args, **options):
@@ -301,6 +314,7 @@ class Command(BaseCommand):
                 'vagas_cobertas': 1,
                 'filtros_obrigatorios': '',
                 'infraestrutura': ['Piscina', 'Academia', 'Portaria 24h'],
+                'colaboradores': [usuarios_padrao[1]],
                 'criado_em': agora - timedelta(days=2),
             },
             {
@@ -324,6 +338,7 @@ class Command(BaseCommand):
                     'tipo_imovel', 'finalidade', 'valor', 'dormitorios', 'suites', 'vagas',
                 ),
                 'infraestrutura': ['Churrasqueira', 'Espaço Gourmet'],
+                'colaboradores': [usuarios_padrao[0]],
                 'criado_em': agora - timedelta(days=5),
             },
             {
@@ -356,6 +371,7 @@ class Command(BaseCommand):
                 'valor_maximo': Decimal('500000'),
                 'area_minima': Decimal('300'),
                 'filtros_obrigatorios': _filtros('tipo_imovel', 'valor', 'area_minima'),
+                'colaboradores': [usuarios_padrao[1]],
                 'criado_em': agora - timedelta(days=7),
             },
             {

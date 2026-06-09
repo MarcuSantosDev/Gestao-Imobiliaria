@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
+from django.db.models import Q
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
 from apps.imoveis.fields import parse_moeda_br
@@ -185,7 +186,7 @@ class ImovelDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         demandas_abertas = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
         if self.request.user.is_authenticated:
-            demandas_abertas = demandas_abertas.filter(owner=self.request.user)
+            demandas_abertas = demandas_abertas.filter(Q(owner=self.request.user) | Q(colaboradores=self.request.user)).distinct()
         else:
             demandas_abertas = demandas_abertas.none()
 
