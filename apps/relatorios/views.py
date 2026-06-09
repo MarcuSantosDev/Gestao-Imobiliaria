@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView, ListView, TemplateView, View
 
@@ -28,11 +29,11 @@ class HistoricoOrdenacaoMixin:
         return context
 
 
-class HistoricoIndexView(TemplateView):
+class HistoricoIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'historico/index.html'
 
 
-class HistoricoImoveisView(HistoricoOrdenacaoMixin, ListView):
+class HistoricoImoveisView(LoginRequiredMixin, HistoricoOrdenacaoMixin, ListView):
     model = Imovel
     template_name = 'historico/imoveis.html'
     context_object_name = 'imoveis'
@@ -41,11 +42,11 @@ class HistoricoImoveisView(HistoricoOrdenacaoMixin, ListView):
     def get_queryset(self):
         qs = Imovel.objects.filter(
             status__in=IMOVEIS_HISTORICO_STATUS
-        ).select_related('corretor')
+        ).select_related('corretor', 'created_by')
         return self.ordenar_queryset(qs)
 
 
-class HistoricoDemandasView(HistoricoOrdenacaoMixin, ListView):
+class HistoricoDemandasView(LoginRequiredMixin, HistoricoOrdenacaoMixin, ListView):
     model = DemandaCliente
     template_name = 'historico/demandas.html'
     context_object_name = 'demandas'
@@ -58,7 +59,7 @@ class HistoricoDemandasView(HistoricoOrdenacaoMixin, ListView):
         return self.ordenar_queryset(qs)
 
 
-class HistoricoDemandaDetailView(DetailView):
+class HistoricoDemandaDetailView(LoginRequiredMixin, DetailView):
     model = DemandaCliente
     template_name = 'historico/demanda_detail.html'
     context_object_name = 'demanda'

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Logout - ImobiGest CRM{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <h1 class="h4 mb-4">Você saiu do sistema</h1>
+                <p class="mb-4">Sua sessão foi encerrada com sucesso.</p>
+                <a href="{% url 'login' %}" class="btn btn-primary">Entrar novamente</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary ms-2">Voltar ao início</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

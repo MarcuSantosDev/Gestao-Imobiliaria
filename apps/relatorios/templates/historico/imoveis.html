@@ -36,6 +36,7 @@
                     <th class="col-num">Valor</th>
                     <th>Cidade</th>
                     <th>Bairro</th>
+                    <th>Usuário</th>
                     <th class="col-status">Status</th>
                     <th class="table-actions no-print">Ações</th>
                 </tr>
@@ -49,8 +50,10 @@
                     <td class="col-num">{{ imovel.valor|moeda }}</td>
                     <td>{{ imovel.cidade }}</td>
                     <td>{{ imovel.bairro }}</td>
+                    <td>{% if imovel.created_by %}{{ imovel.created_by.username }}{% else %}—{% endif %}</td>
                     <td class="col-status">{% include 'includes/imovel_status_badge.html' %}</td>
                     <td class="table-actions no-print">
+                        <a href="{% url 'imoveis:detail' imovel.pk %}" class="btn btn-sm btn-outline-secondary me-1">Detalhes</a>
                         <form method="post" action="{% url 'historico:imoveis_reabrir' imovel.pk %}" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-outline-primary" onclick="return confirm('Tem certeza que deseja desfazer este imóvel?');">Desfazer</button>
@@ -58,7 +61,7 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr class="table-empty"><td colspan="8">Nenhum imóvel vendido, alugado ou reservado.</td></tr>
+                <tr class="table-empty"><td colspan="9">Nenhum imóvel vendido, alugado ou reservado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

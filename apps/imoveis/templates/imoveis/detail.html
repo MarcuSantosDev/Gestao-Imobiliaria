@@ -73,6 +73,11 @@
                 {% if imovel.corretor %}
                 <p><strong>Corretor:</strong> {{ imovel.corretor.nome }} ({{ imovel.corretor.telefone }})</p>
                 {% endif %}
+                {% if imovel.created_by %}
+                <p><strong>Adicionado por:</strong> {{ imovel.created_by.username }}</p>
+                {% else %}
+                <p><strong>Adicionado por:</strong> —</p>
+                {% endif %}
             </div>
         </div>
 
@@ -94,7 +99,7 @@
                     <p class="mb-0">Este imóvel está com status <strong>{{ imovel.get_status_display }}</strong> e não pode ser adicionado a nenhuma demanda.</p>
                     <p class="small text-muted mt-2">Somente imóveis disponíveis podem ser vinculados a demandas.</p>
                     {% endif %}
-                {% elif demandas_abertas %}
+                {% elif user.is_authenticated and demandas_abertas %}
                 <form id="adicionarDemandaForm" method="post" class="row g-2">
                     {% csrf_token %}
                     <input type="hidden" name="imovel_id" value="{{ imovel.pk }}">
@@ -114,8 +119,13 @@
                     </div>
                 </form>
                 {% else %}
-                <p class="mb-0">Não há demandas abertas disponíveis para adicionar este imóvel.</p>
-                <a href="{% url 'demandas:create' %}" class="btn btn-outline-primary mt-2">Nova demanda</a>
+                {% if not user.is_authenticated %}
+                    <p class="mb-0">Faça login para adicionar este imóvel a uma demanda.</p>
+                    <a href="{% url 'login' %}" class="btn btn-primary mt-2">Entrar</a>
+                {% else %}
+                    <p class="mb-0">Não há demandas abertas disponíveis para adicionar este imóvel.</p>
+                    <a href="{% url 'demandas:create' %}" class="btn btn-outline-primary mt-2">Nova demanda</a>
+                {% endif %}
                 {% endif %}
                 {% if imovel.status == 'disponivel' and imovel_demandas %}
                 <div class="mt-3">

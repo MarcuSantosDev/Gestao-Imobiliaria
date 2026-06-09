@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -112,6 +113,13 @@ class Imovel(models.Model):
     )
 
     corretor = models.ForeignKey('Corretor', on_delete=models.SET_NULL, null=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='imoveis',
+    )
 
     infraestrutura = models.ManyToManyField('Infraestrutura', blank=True)
 
@@ -224,6 +232,13 @@ class DemandaCliente(models.Model):
     STATUS_HISTORICO = ('atendida', 'cancelado')
 
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='demandas',
+    )
 
     tipo_imovel = models.CharField(max_length=30, choices=TIPO_CHOICES)
     finalidade = models.CharField(max_length=20, choices=FINALIDADE_CHOICES)
@@ -346,6 +361,9 @@ class DemandaCliente(models.Model):
         return Imovel.objects.filter(
             selecoes_demanda__demanda=self,
         ).order_by('-selecoes_demanda__adicionado_em')
+
+    def tem_imovel_vendido_ou_alugado(self):
+        return self.get_imoveis_selecionados().filter(status__in=Imovel.HISTORICO_STATUS).exists()
 
 
 class DemandaImovelSelecionado(models.Model):

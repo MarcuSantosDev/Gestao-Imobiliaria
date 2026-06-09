@@ -1,6 +1,7 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -18,18 +19,21 @@ from .forms import DemandaForm
 from .matching import buscar_imoveis_compativeis
 
 
-def queryset_demandas_abertas():
-    return DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+def queryset_demandas_abertas(user=None):
+    qs = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+    if user is not None:
+        qs = qs.filter(owner=user)
+    return qs
 
 
-class DemandaListView(ListView):
+class DemandaListView(LoginRequiredMixin, ListView):
     model = DemandaCliente
     template_name = 'demandas/list.html'
     context_object_name = 'demandas'
 
     def get_queryset(self):
         qs = (
-            queryset_demandas_abertas()
+            queryset_demandas_abertas(self.request.user)
             .select_related('cliente')
             .annotate(total_imoveis=Count('imoveis_selecionados'))
         )
@@ -39,10 +43,13 @@ class DemandaListView(ListView):
         return qs.order_by('-criado_em')
 
 
-class DemandaDetailView(DetailView):
+class DemandaDetailView(LoginRequiredMixin, DetailView):
     model = DemandaCliente
     template_name = 'demandas/detail.html'
     context_object_name = 'demanda'
+
+    def get_queryset(self):
+        return queryset_demandas_abertas(self.request.user).select_related('cliente')
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -65,21 +72,25 @@ class DemandaFormMixin(LocalidadesFormMixin):
         return context
 
 
-class DemandaCreateView(DemandaFormMixin, CreateView):
+class DemandaCreateView(LoginRequiredMixin, DemandaFormMixin, CreateView):
     model = DemandaCliente
     form_class = DemandaForm
     template_name = 'demandas/form.html'
     success_url = reverse_lazy('demandas:list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
-class DemandaUpdateView(DemandaFormMixin, UpdateView):
+
+class DemandaUpdateView(LoginRequiredMixin, DemandaFormMixin, UpdateView):
     model = DemandaCliente
     form_class = DemandaForm
     template_name = 'demandas/form.html'
     success_url = reverse_lazy('demandas:list')
 
     def get_queryset(self):
-        return queryset_demandas_abertas()
+        return queryset_demandas_abertas(self.request.user)
 
     def form_valid(self, form):
         self.object = form.save()
@@ -93,22 +104,22 @@ class DemandaUpdateView(DemandaFormMixin, UpdateView):
         return redirect(self.success_url)
 
 
-class DemandaDeleteView(DeleteView):
+class DemandaDeleteView(LoginRequiredMixin, DeleteView):
     model = DemandaCliente
     template_name = 'demandas/confirm_delete.html'
     success_url = reverse_lazy('demandas:list')
 
     def get_queryset(self):
-        return queryset_demandas_abertas()
+        return queryset_demandas_abertas(self.request.user)
 
 
-class DemandaBuscaView(DetailView):
+class DemandaBuscaView(LoginRequiredMixin, DetailView):
     model = DemandaCliente
     template_name = 'demandas/busca.html'
     context_object_name = 'demanda'
 
     def get_queryset(self):
-        return queryset_demandas_abertas()
+        return queryset_demandas_abertas(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -120,13 +131,13 @@ class DemandaBuscaView(DetailView):
         return context
 
 
-class DemandaImoveisSelecionadosView(DetailView):
+class DemandaImoveisSelecionadosView(LoginRequiredMixin, DetailView):
     model = DemandaCliente
     template_name = 'demandas/imoveis_selecionados.html'
     context_object_name = 'demanda'
 
     def get_queryset(self):
-        return queryset_demandas_abertas()
+        return queryset_demandas_abertas(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -135,9 +146,14 @@ class DemandaImoveisSelecionadosView(DetailView):
 
 
 @method_decorator(require_POST, name='dispatch')
-class DemandaImovelAdicionarView(View):
+class DemandaImovelAdicionarView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        demanda = get_object_or_404(DemandaCliente, pk=pk, status__in=DemandaCliente.STATUS_ABERTAS)
+        demanda = get_object_or_404(
+            DemandaCliente,
+            pk=pk,
+            owner=request.user,
+            status__in=DemandaCliente.STATUS_ABERTAS,
+        )
         imovel = get_object_or_404(Imovel, pk=request.POST.get('imovel_id'))
         next_url = request.POST.get('next') or request.META.get('HTTP_REFERER')
 
@@ -167,9 +183,14 @@ class DemandaImovelAdicionarView(View):
 
 
 @method_decorator(require_POST, name='dispatch')
-class DemandaImovelRemoverView(View):
+class DemandaImovelRemoverView(LoginRequiredMixin, View):
     def post(self, request, pk, imovel_pk):
-        demanda = get_object_or_404(DemandaCliente, pk=pk, status__in=DemandaCliente.STATUS_ABERTAS)
+        demanda = get_object_or_404(
+            DemandaCliente,
+            pk=pk,
+            owner=request.user,
+            status__in=DemandaCliente.STATUS_ABERTAS,
+        )
         selecao = get_object_or_404(
             DemandaImovelSelecionado,
             demanda=demanda,
@@ -189,9 +210,22 @@ class DemandaImovelRemoverView(View):
         return redirect('demandas:imoveis_selecionados', pk=demanda.pk)
 
 
-class DemandaAtenderView(View):
+class DemandaAtenderView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        demanda = get_object_or_404(DemandaCliente, pk=pk, status__in=DemandaCliente.STATUS_ABERTAS)
+        demanda = get_object_or_404(
+            DemandaCliente,
+            pk=pk,
+            owner=request.user,
+            status__in=DemandaCliente.STATUS_ABERTAS,
+        )
+        selecionados = demanda.get_imoveis_selecionados()
+        if not selecionados.exists():
+            messages.error(request, 'Não é possível finalizar a demanda sem pelo menos um imóvel selecionado.')
+            return redirect('demandas:detail', pk=demanda.pk)
+        if not selecionados.filter(status__in=Imovel.HISTORICO_STATUS).exists():
+            messages.error(request, 'Só é possível finalizar a demanda quando um imóvel selecionado estiver vendido ou alugado.')
+            return redirect('demandas:detail', pk=demanda.pk)
+
         demanda.status = 'atendida'
         demanda.atendida_em = timezone.now()
         demanda.save()

@@ -1,6 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -39,7 +40,7 @@ class Command(BaseCommand):
         por_nome = {i.nome.lower(): i for i in infra_list}
         return [por_nome[n.lower()] for n in nomes if n.lower() in por_nome]
 
-    def _criar_imoveis(self, corretores, infra_list, quantidade):
+    def _criar_imoveis(self, corretores, infra_list, quantidade, usuarios_padrao=None):
         tipos = [
             ('apartamento', 'venda'),
             ('casa', 'venda'),
@@ -118,6 +119,7 @@ class Command(BaseCommand):
                 'posicao_solar': posicao_solar,
                 'corretor': corretores[n % len(corretores)],
                 'finalizado_em': finalizado_em,
+                'created_by': usuarios_padrao[n % len(usuarios_padrao)] if usuarios_padrao else None,
             }
 
             imovel, created = Imovel.objects.update_or_create(
@@ -144,7 +146,7 @@ class Command(BaseCommand):
             imoveis.append(imovel)
         return imoveis, novos
 
-    def _criar_demanda(self, dados, infra_list):
+    def _criar_demanda(self, dados, infra_list, usuarios_padrao=None, index=0):
         bairros = dados.get('bairros', '')
         bairro_principal = bairros.split(',')[0].strip() if bairros else None
         lookup = {
@@ -174,6 +176,11 @@ class Command(BaseCommand):
             'atendida_em': dados.get('atendida_em'),
         }
         demanda, created = DemandaCliente.objects.update_or_create(**lookup, defaults=defaults)
+        if usuarios_padrao:
+            owner = usuarios_padrao[index % len(usuarios_padrao)]
+            if demanda.owner_id != owner.pk:
+                demanda.owner = owner
+                demanda.save(update_fields=['owner'])
         DemandaCliente.objects.filter(pk=demanda.pk).update(
             criado_em=dados['criado_em'],
             atendida_em=dados.get('atendida_em'),
@@ -192,6 +199,28 @@ class Command(BaseCommand):
             Cliente.objects.all().delete()
             Corretor.objects.all().delete()
             self.stdout.write('Dados de teste removidos.')
+
+        User = get_user_model()
+        usuarios_padrao = []
+        for username, email, password in [
+            ('sonia', 'sonia@example.com', 'sonia1234'),
+            ('marcelo', 'marcelo@example.com', 'marcelo1234'),
+        ]:
+            usuario, criado_usuario = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    'email': email,
+                    'is_staff': True,
+                    'is_superuser': False,
+                },
+            )
+            if criado_usuario:
+                usuario.set_password(password)
+                usuario.save()
+                self.stdout.write(self.style.SUCCESS(
+                    f'Usuário criado: {username} / {password}'
+                ))
+            usuarios_padrao.append(usuario)
 
         call_command('seed_dados')
 
@@ -244,7 +273,7 @@ class Command(BaseCommand):
             clientes.append(cliente)
 
         imoveis, imoveis_novos = self._criar_imoveis(
-            corretores, infra_list, options['imoveis'],
+            corretores, infra_list, options['imoveis'], usuarios_padrao,
         )
 
         agora = timezone.now()
@@ -421,8 +450,8 @@ class Command(BaseCommand):
 
         demandas_criadas = 0
         demandas_atualizadas = 0
-        for dados in demandas_data:
-            _, created = self._criar_demanda(dados, infra_list)
+        for index, dados in enumerate(demandas_data):
+            _, created = self._criar_demanda(dados, infra_list, usuarios_padrao, index)
             if created:
                 demandas_criadas += 1
             else:

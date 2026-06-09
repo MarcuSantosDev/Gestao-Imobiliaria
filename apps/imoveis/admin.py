@@ -36,7 +36,7 @@ class FotoImovelInline(admin.TabularInline):
 
 @admin.register(Imovel)
 class ImovelAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'tipo', 'cidade', 'bairro', 'valor', 'status', 'finalizado_em', 'corretor')
+    list_display = ('titulo', 'tipo', 'cidade', 'bairro', 'valor', 'status', 'finalizado_em', 'corretor', 'created_by')
     list_filter = ('status', 'finalidade', 'tipo')
     search_fields = ('titulo', 'bairro')
     filter_horizontal = ('infraestrutura',)

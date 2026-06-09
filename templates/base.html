@@ -41,6 +41,17 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'corretores:list' %}">Corretores</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'demandas:list' %}">Demandas</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'historico:index' %}">Histórico</a></li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item"><span class="nav-link disabled">Olá, {{ user.username }}</span></li>
+                        <li class="nav-item">
+                            <form method="post" action="{% url 'logout' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="nav-link btn btn-link p-0">Sair</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Entrar</a></li>
+                    {% endif %}
                     <li class="nav-item">
                         <button type="button" class="btn btn-theme-toggle" data-theme-toggle onclick="toggleTheme()">
                             <i class="bi bi-moon-stars-fill"></i>

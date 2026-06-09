@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'project.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -126,5 +127,9 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

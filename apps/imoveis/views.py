@@ -183,11 +183,17 @@ class ImovelDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['demandas_abertas'] = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+        demandas_abertas = DemandaCliente.objects.filter(status__in=DemandaCliente.STATUS_ABERTAS)
+        if self.request.user.is_authenticated:
+            demandas_abertas = demandas_abertas.filter(owner=self.request.user)
+        else:
+            demandas_abertas = demandas_abertas.none()
+
         selecoes = self.object.selecoes_demanda.select_related('demanda').all()
+        context['demandas_abertas'] = demandas_abertas
         context['imovel_demandas'] = selecoes
         context['imovel_disponivel_para_demanda'] = (
-            self.object.status == 'disponivel' and not selecoes.exists()
+            self.object.status == 'disponivel' and not selecoes.exists() and self.request.user.is_authenticated
         )
         return context
 
@@ -199,6 +205,7 @@ class ImovelCreateView(LocalidadesFormMixin, CreateView):
     success_url = reverse_lazy('imoveis:list')
 
     def form_valid(self, form):
+        form.instance.created_by = self.request.user
         response = super().form_valid(form)
         self._salvar_fotos(self.object)
         return response

@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from apps.imoveis.fields import MoedaDecimalField
 from apps.imoveis.localidades import CIDADES, bairros_da_cidade
-from apps.imoveis.models import DemandaCliente, FILTRO_DEMANDA_OPCOES
+from apps.imoveis.models import DemandaCliente, FILTRO_DEMANDA_OPCOES, Imovel
 
 
 class DemandaForm(forms.ModelForm):
@@ -109,6 +109,14 @@ class DemandaForm(forms.ModelForm):
         vagas_cobertas = cleaned_data.get('vagas_cobertas')
         if vagas_cobertas is not None and vagas is not None and vagas_cobertas > vagas:
             self.add_error('vagas_cobertas', 'Garagens cobertas não pode ser maior que o total de garagem.')
+
+        if self.instance.pk and cleaned_data.get('status') == 'atendida':
+            selecionados = self.instance.get_imoveis_selecionados()
+            if not selecionados.exists():
+                self.add_error('status', 'A demanda não pode ser finalizada sem nenhum imóvel selecionado.')
+            elif not selecionados.filter(status__in=Imovel.HISTORICO_STATUS).exists():
+                self.add_error('status', 'A demanda só pode ser finalizada quando um imóvel selecionado estiver vendido ou alugado.')
+
         return cleaned_data
 
     def save(self, commit=True):
