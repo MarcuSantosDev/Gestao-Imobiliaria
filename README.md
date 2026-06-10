@@ -2,7 +2,6 @@
 
 
 ![Status](https://img.shields.io/badge/status-production-brightgreen)
-![API](https://img.shields.io/badge/API-REST-blue)
 ![Architecture](https://img.shields.io/badge/architecture-saas-orange)
 
 Sistema CRM imobiliário desenvolvido em Django para gestão de imóveis, clientes, corretores e demandas.
