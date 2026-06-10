@@ -43,7 +43,7 @@ docker build -t gestao-imobiliaria .
 docker run -p 8000:8000 gestao-imobiliaria
 
 ## 🌐 Acessar
-http://localhost:8000/
+http://localhost:8000/ ou http://127.0.0.1:8000/
 
 ## ⚙️ Instalação local
 1. Clonar o projeto
