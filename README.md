@@ -1,169 +1,103 @@
-# Gestão Imobiliária
+🏢 Gestão Imobiliária
+
+
+![Status](https://img.shields.io/badge/status-production-brightgreen)
+![API](https://img.shields.io/badge/API-REST-blue)
+![Architecture](https://img.shields.io/badge/architecture-saas-orange)
 
 Sistema CRM imobiliário desenvolvido em Django para gestão de imóveis, clientes, corretores e demandas.
 
-## Principais recursos
+A aplicação está hospedada na Fly.io, utiliza banco de dados na Neon (PostgreSQL) e armazenamento de imagens na Cloudinary. Conta com sistema de usuários com autenticação, onde cada usuário possui suas próprias demandas e compartilha a base de imóveis da plataforma.
 
+## 🚀 Principais recursos
 - Cadastro de imóveis, clientes e corretores
+- Sistema de usuários com autenticação
+- Cada usuário possui suas próprias demandas
+- Base compartilhada de imóveis entre usuários
 - Busca inteligente de imóveis por compatibilidade com demandas
 - Dashboard com indicadores e atalhos
 - Upload múltiplo de fotos com recorte
-- Compartilhamento de imóveis via WhatsApp
-- Download de fotos em ZIP
+- Armazenamento de imagens na Cloudinary
+- Compartilhamento via WhatsApp
+- Download de imagens em ZIP
 - Histórico de imóveis e demandas finalizadas
-- Exclusão automática de arquivos de imagem ao remover fotos ou imóveis
+- Exclusão automática de arquivos de mídia
+- Deploy em produção na Fly.io
+- Banco de dados PostgreSQL na Neon
 
-## Requisitos
+## ☁️ Arquitetura SaaS
+- Camada	Serviço
+- Hosting	Fly.io
+- Database	Neon (PostgreSQL)
+- Storage	Cloudinary
+- Container	Docker
+## 🧠 Banco de dados
+- 🧪 Local: SQLite (db.sqlite3)
+- 🌍 Produção: PostgreSQL (Neon via DATABASE_URL)
 
-- Python 3.10+
-- pip
+O sistema alterna automaticamente entre ambientes com base no DEBUG.
 
-## Instalação
+## 🐳 Docker
+📦 Build da imagem
+docker build -t gestao-imobiliaria .
+▶️ Rodar container
+docker run -p 8000:8000 gestao-imobiliaria
 
-### 1. Clonar o repositório
+## 🌐 Acessar
+http://localhost:8000/
 
-```bash
+## ⚙️ Instalação local
+1. Clonar o projeto
 git clone https://github.com/MarcuSantosDev/Gestao-Imobiliaria.git
 cd Gestao-Imobiliaria
-```
-
-### 2. Criar o ambiente virtual
-
-```bash
+2. Criar ambiente virtual
 python -m venv venv
-```
+3. Ativar ambiente
 
-### 3. Ativar o ambiente virtual
+Windows
 
-**Windows**
-
-```powershell
 .\venv\Scripts\Activate.ps1
-```
 
-**Linux / macOS**
+Linux/macOS
 
-```bash
 source venv/bin/activate
-```
-
-### 4. Instalar as dependências
-
-```bash
+4. Instalar dependências
 pip install -r requirements.txt
-```
-
-### 5. Aplicar as migrações
-
-```bash
+5. Migrar banco
 python manage.py migrate
-```
-
-### 6. Cadastrar os dados iniciais
-
-```bash
-python manage.py seed_dados
-```
-
-### 7. Iniciar o servidor
-
-```bash
+6. Rodar servidor
 python manage.py runserver
-```
 
-### 8. Acessar o sistema
-
-```text
-http://127.0.0.1:8000/
-```
-
-### Windows (atalho)
-
-Após concluir a instalação uma vez, você pode iniciar o projeto apenas executando:
-
-```text
-iniciar.bat
-```
-
-## Dados de teste (opcional)
-
-```bash
-python manage.py populate_db
-```
-
-Cria dados fictícios para demonstração do sistema.
-
-```bash
-python manage.py populate_db --clear
-```
-
-Remove os dados de teste gerados.
-
-## Módulos
-
-| Módulo     | Função                                      |
-| ---------- | ------------------------------------------- |
-| Dashboard  | Visão geral do sistema                      |
-| Imóveis    | Cadastro, fotos, filtros e compartilhamento |
-| Clientes   | Cadastro e gerenciamento de clientes        |
-| Corretores | Cadastro de corretores e imobiliárias       |
-| Demandas   | Busca inteligente de imóveis                |
-| Histórico  | Imóveis e demandas finalizadas              |
-
-## Comandos úteis
-
-```bash
-python manage.py runserver
-python manage.py migrate
-python manage.py seed_dados
-python manage.py createsuperuser
-python manage.py check
-```
-
-## Admin Django
-
-```bash
-python manage.py createsuperuser
-```
-
-Acesse:
-
-```text
-http://127.0.0.1:8000/admin/
-```
-
-## Estrutura do projeto
-
-```text
-Gestao-Imobiliaria/
-├── apps/
-├── project/
-├── templates/
-├── static/
-├── media/
-├── manage.py
-├── requirements.txt
-└── iniciar.bat
-```
-
-## Tecnologias
-
+## 📊 Módulos
+- Módulo	Função
+- Dashboard	Visão geral do sistema
+- Imóveis	Cadastro e gestão
+- Clientes	CRM de clientes
+- Corretores	Gestão de parceiros
+- Demandas	Matching inteligente
+- Usuários	Autenticação e isolamento
+- Histórico	Registros finalizados
+## 🧰 Tecnologias
 - Django
+- PostgreSQL (Neon)
+- Cloudinary
+- Fly.io
+- Docker
+- Bootstrap 5
 - Pillow
 - django-filter
-- Bootstrap 5
 - Cropper.js
-- SQLite
+## ⚡ Deploy
+- Deploy contínuo via Fly.io
+- Variáveis de ambiente via .env
+- Storage externo via Cloudinary
+- Banco gerenciado via Neon
+## 🧪 Observações
+- SQLite usado apenas em desenvolvimento
+- Produção isolada via PostgreSQL
+- Uploads em Cloudinary
+- Projeto pronto para SaaS escalável
+- Arquitetura preparada para multi-usuário
+## 📜 Licença
 
-## Observações
-
-- O banco de dados (`db.sqlite3`) não faz parte do repositório.
-- Execute `python manage.py migrate` para criar a estrutura do banco local.
-- `seed_dados` cadastra as infraestruturas iniciais do sistema.
-- Arquivos enviados pelos usuários são armazenados em `media/`.
-- Ao excluir uma foto ou imóvel, os arquivos associados são removidos automaticamente.
-- Projeto configurado para desenvolvimento local utilizando SQLite.
-
-## Licença
-
-Este projeto é proprietário. Todos os direitos são reservados a Marcus Vinicius Vieira Santos. Consulte o arquivo LICENSE para mais informações.
+Este projeto é proprietário. Todos os direitos são reservados a Marcus Vinicius Vieira Santos.
