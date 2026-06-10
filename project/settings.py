@@ -28,6 +28,16 @@ ALLOWED_HOSTS = [
     ".fly.dev",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://gestao-imobiliaria-t6muqg.fly.dev",
+    "https://*.fly.dev",
+]
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
 # =========================
 # APPS
 # =========================
@@ -178,6 +188,7 @@ USE_TZ = True
 # =========================
 
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # =========================
