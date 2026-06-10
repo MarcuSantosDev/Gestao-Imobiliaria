@@ -21,5 +21,5 @@ RUN set -ex && \
     pip install -r /tmp/requirements.txt && \
     rm -rf /root/.cache/
 COPY . /code
-
+RUN python manage.py collectstatic --noinput --settings=project.settings
 CMD ["gunicorn", "project.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "2"]

@@ -15,7 +15,7 @@ Sistema CRM imobiliário desenvolvido em Django para gestão de imóveis, client
 
 ## Requisitos
 
-- Python 3.13+
+- Python 3.10+
 - pip
 
 ## Instalação
