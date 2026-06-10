@@ -30,6 +30,7 @@ A aplicação está hospedada na Fly.io, utiliza banco de dados na Neon (Postgre
 - Database	Neon (PostgreSQL)
 - Storage	Cloudinary
 - Container	Docker
+- 
 ## 🧠 Banco de dados
 - 🧪 Local: SQLite (db.sqlite3)
 - 🌍 Produção: PostgreSQL (Neon via DATABASE_URL)
@@ -76,6 +77,7 @@ python manage.py runserver
 - Demandas	Matching inteligente
 - Usuários	Autenticação e isolamento
 - Histórico	Registros finalizados
+- 
 ## 🧰 Tecnologias
 - Django
 - PostgreSQL (Neon)
@@ -86,17 +88,19 @@ python manage.py runserver
 - Pillow
 - django-filter
 - Cropper.js
+- 
 ## ⚡ Deploy
 - Deploy contínuo via Fly.io
 - Variáveis de ambiente via .env
 - Storage externo via Cloudinary
 - Banco gerenciado via Neon
+- 
 ## 🧪 Observações
 - SQLite usado apenas em desenvolvimento
 - Produção isolada via PostgreSQL
 - Uploads em Cloudinary
 - Projeto pronto para SaaS escalável
 - Arquitetura preparada para multi-usuário
+- 
 ## 📜 Licença
-
-Este projeto é proprietário. Todos os direitos são reservados a Marcus Vinicius Vieira Santos.
+Este projeto é proprietário. Todos os direitos são reservados a Marcus Vinicius Vieira Santos. Consulte o arquivo LICENSE para mais informações.
