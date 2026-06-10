@@ -22,4 +22,4 @@ RUN set -ex && \
     rm -rf /root/.cache/
 COPY . /code
 
-CMD ["sh", "-c", "gunicorn project.wsgi:application --bind 0.0.0.0:$PORT --workers 2"]
+CMD ["gunicorn", "project.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "2"]
