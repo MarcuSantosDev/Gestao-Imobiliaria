@@ -1,11 +1,27 @@
-FROM python:3.13-slim
+ARG PYTHON_VERSION=3.10-slim
 
-WORKDIR /app
+FROM python:${PYTHON_VERSION}
 
-COPY requirements.txt .
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-RUN pip install --no-cache-dir -r requirements.txt
+# install psycopg2 dependencies.
+RUN apt-get update && apt-get install -y \
+  libpq-dev \
+  gcc \
+  && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+RUN mkdir -p /code
 
-CMD ["gunicorn", "project.wsgi:application", "--bind", "0.0.0.0:8000"]
+WORKDIR /code
+
+COPY requirements.txt /tmp/requirements.txt
+RUN set -ex && \
+  pip install --upgrade pip && \
+  pip install -r /tmp/requirements.txt && \
+  rm -rf /root/.cache/
+COPY . /code
+
+EXPOSE 8000
+
+CMD ["gunicorn", "project.wsgi:application", "--bind", "0.0.0.0:8080", "--workers", "2"]

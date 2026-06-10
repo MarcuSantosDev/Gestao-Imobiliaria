@@ -92,7 +92,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "project.wsgi.application"
 
 # =========================
-# DATABASE (FIX DEFINITIVO)
+# DATABASE 
 # =========================
 
 if DEBUG:
