@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils import timezone
 
 from .localidades import CIDADE_CHOICES
@@ -173,9 +175,10 @@ class FotoImovel(models.Model):
             if arquivo and arquivo.name:
                 arquivo.delete(save=False)
 
-    def delete(self, *args, **kwargs):
-        self.excluir_arquivos_midia()
-        super().delete(*args, **kwargs)
+
+@receiver(pre_delete, sender=FotoImovel)
+def excluir_arquivos_foto_imovel(sender, instance, **kwargs):
+    instance.excluir_arquivos_midia()
 
 FILTROS_OBRIGATORIOS_FIXOS = ('cidade', 'bairros')
 
