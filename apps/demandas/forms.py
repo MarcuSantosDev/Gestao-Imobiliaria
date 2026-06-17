@@ -101,7 +101,7 @@ class DemandaForm(forms.ModelForm):
                 ('cancelado', 'Cancelada'),
             ]
         self.fields['tipo_imovel'].label = 'Qual tipo de imóvel está procurando?'
-        self.fields['finalidade'].label = 'Para locação ou venda?'
+        self.fields['finalidade'].label = 'Para locação, venda ou compra?'
         self.fields['vagas'].label = 'Garagem (mínimo)'
         self.fields['vagas_cobertas'].label = 'Garagens cobertas (mínimo)'
         self.fields['area_minima'].label = 'Área mínima (m²)'

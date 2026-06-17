@@ -69,6 +69,7 @@ class Imovel(models.Model):
     FINALIDADE_CHOICES = [
         ('venda', 'Venda'),
         ('locacao', 'Locação'),
+        ('compra', 'Compra')
     ]
 
     POSICAO_SOLAR_CHOICES = [
@@ -222,6 +223,7 @@ class DemandaCliente(models.Model):
     FINALIDADE_CHOICES = [
         ('venda', 'Venda'),
         ('locacao', 'Locação'),
+        ('compra', 'Compra')
     ]
 
     STATUS_CHOICES = [
